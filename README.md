@@ -1,133 +1,91 @@
-# soran-cfw: custom firmware for the Soran Dual Stomp Lite
+# Stomp Extra: custom firmware and editor for the Soran Dual Stomp Lite
 
-A reproducible build pipeline for custom firmware on the Soran Dual Stomp Lite (JME-02), and by
-extension the Dual Stomp and Tiny Stomp, which share the same NUX "JME" platform.
+Custom firmware (CFW) for the **Soran Dual Stomp Lite** on stock firmware V1.1.1, plus a browser
+editor. The CFW is the stock firmware with every feature kept; it only adds to it.
 
-The latest firmware is **0.6.0-longir-test**, configured in `cfw-long-ir-test.toml`. It is
-0.5.2 plus **1024-tap user cab IRs**: the 10 IR slots play the IR's first 1024 samples (21.3 ms)
-instead of 384 (8 ms), with no added latency. On eleven cab IRs the error of what the pedal plays
-dropped from 1.43 to 0.11 dB rms (0.20 dB in the 31–160 Hz bands). It uses partitioned FFT
-convolution, which has the same output as a direct 1024-tap filter, and adds about 700 emulator
-instructions per audio callback. Built-in cabs and everything else behave exactly as in 0.5.2. See
-[long-IR design and results](docs/LONG-IR.md). On the pedal, 60 s with a user NAM amp, a user IR
-and a MOD capture ran at a median of 81k of the 100k-cycle budget (highest sampled 92k), with no
-overruns or guard trips. The full AMP + EQ + MOD capture setup hasn't been measured on this build yet.
+**Latest release: [0.6.0 — 1024-tap user cab IRs](https://github.com/nvhhh/stomp_extra/releases/latest)**
+· **Editor: https://nvhhh.github.io/stomp_extra/**
 
-The previous release, **0.5.2-deadline** (`cfw-fx-fixed-deadline.toml`), added expanded effects,
-20 capture slots (10 USER AMP slots for AMP and 10 FX slots for EQ/MOD), and optimized capture
-processing. See [capture implementation and hardware results](docs/PARTITIONED-CAPTURE.md).
-Earlier configurations are retained for development history; the default
-`cfw.toml` builds the original feature-preserving baseline below.
+## What you get
 
-**Before flashing any CFW**, back up your presets, user captures, IRs and NAMs. A full image
-erases part of the user capture storage (FX01 on recent builds), so restore captures afterwards
-(`tools/restore_capture_session.py`), and re-upload IRs/NAMs if any slot comes back empty.
+- **Longer user cab IRs.** The 10 user IR slots play 21 ms of the IR (1024 samples) instead
+  of 8 ms (384 samples). Low end and cab resonance are much closer to the original IR, with no
+  added latency. ([details](docs/LONG-IR.md))
+- **20 capture slots.** USER AMP 01–10 for the AMP block, FX 01–10 for EQ and MOD.
+- **OD/FX models in more slots**, selectable on the pedal.
+- **Faster capture processing**, so AMP + EQ + MOD captures can run together, with overload
+  protection: if the DSP runs out of time, captures switch to dry instead of crashing.
+- **Editor:** every preset and parameter, drag-and-drop effect order, NAM and IR import,
+  `.jmePreset` import/export.
 
-The editor supports effect-chain rearrangement, editable capture names during
-NAM import (defaulting to the filename), and separate AMP/FX libraries with
-improved contrast and readable capture names.
+Built-in amps, cabs, effects, looper, drums, USB audio and Bluetooth are the vendor's own code,
+unchanged.
 
-The CFW is the **stock V1.1.1 firmware with every feature kept**, plus a build-info tag in unused
-flash and a guarded patch system for adding features. Nothing is rewritten from scratch: the DSP
-engine, amp/effect models, NAM/IR loader, looper, drums, USB audio and BLE stay the vendor's code.
+## Flashing
 
-## Quick start
+> **Back up first.** Flashing erases part of the capture storage (at least FX 01) and can clear
+> user IR/NAM slots. Keep your `.nam` and `.wav` files so you can re-import them.
+
+1. **Back up** presets, captures and the current edit (close the editor bridge first):
+   `.venv/Scripts/python tools/test_partition_capture_hardware.py backup`
+   This writes `backups/library-<time>.zip`.
+2. **Enter DFU mode:** hold **Left + Right** while powering on.
+3. **Flash** the `.bin` from the release, with the official Soran *Device Firmware Updater* or with
+   `.venv/Scripts/python cfw.py flash soran-cfw-<version>.bin`.
+4. **Power-cycle** normally, without holding any footswitch.
+5. **Restore** captures and the edit:
+   `.venv/Scripts/python tools/restore_capture_session.py backups/library-<time>.zip`
+   Then re-import any empty IR/NAM slot.
+
+**Recovery:** DFU mode lives in a separate bootloader that the CFW never touches. If anything goes
+wrong, enter DFU mode and flash the stock firmware or an earlier release.
+
+## Editor
+
+Setup (Windows, once):
 
 ```sh
+git clone https://github.com/nvhhh/stomp_extra && cd stomp_extra
 python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
-# put the stock JME-EN_V1.1.1_modified.bin in firmware/stock/ (from the Soran updater zip)
-.venv/Scripts/python cfw.py selftest      # verifies format, build and simulated DFU
-.venv/Scripts/python cfw.py build         # -> build/soran-cfw-0.1.0-on-1.1.1.bin
 ```
 
-Flash, either with:
+Each time:
 
-* **this tool:** power the pedal on while holding **Left + Right** (DFU mode), then
-  `.venv/Scripts/python cfw.py flash build/soran-cfw-0.1.0-on-1.1.1.bin`
-* **or the official Soran "Device Firmware Updater":** the output uses the same container
-  format, so select the CFW `.bin` there.
+1. Connect the pedal by USB and close Stomp Manager.
+2. Start the bridge: `.venv/Scripts/python editor/server.py --pages`
+3. Open **https://nvhhh.github.io/stomp_extra/** in Chrome or Edge, click **Connect bridge**, and
+   allow local network access if asked.
 
-**Recovery:** DFU mode lives in a separate bootloader that the CFW never modifies. If anything
-goes wrong, enter DFU mode again and flash the stock `firmware/stock/JME-EN_V1.1.1_modified.bin`.
+The bridge talks to the pedal over USB and runs the NAM/IR conversion on your PC. Files go
+straight to the bridge, never to GitHub. If the browser blocks the connection, use the local URL
+the bridge prints (or run `editor/server.py` without `--pages`). NAM import needs Stomp Manager
+installed (it uses its converter DLL); set `SORAN_NAM_DLL` if it isn't found.
 
-## Stomp Editor (presets, effects, NAM / IR import)
+### Which conversion to choose
 
-```sh
-.venv/Scripts/python editor/server.py      # opens http://127.0.0.1:8765
-```
+The import dialog offers two conversions and remembers your choice separately for NAM and IR.
 
-It's a local editor that talks to the pedal over USB MIDI:
-- browse and recall all 99 presets; edit every block (model, on/off, every parameter, preset volume)
-- rearrange all eight effects by dragging blocks, or select a block and use Left/Right;
-  changes apply live, and Save stores the order with the preset (no extra firmware flash needed)
-- rename and save (also to another slot); export and import Stomp Manager `.jmePreset` files
-- import NAM captures into the 10 user‑amp slots, and cab IRs (.wav) into the 10 IR slots
+| | NAM | IR |
+|---|---|---|
+| **Accurate** | **Default, recommended.** Fits the pedal's filters to the whole model; takes about a minute. | Fits the IR into 8 ms. Only for stock / 0.5.2 firmware. |
+| **Stomp Manager (original)** | Same result as Stomp Manager. | **Default, recommended on 0.6.0.** Uploads the IR's real start, which 0.6.0 plays as 21 ms. |
 
-Protocol details are in `docs/PROTOCOL.md`. `tests/test_jme_capture.py` checks the implementation
-against recorded Stomp Manager traffic.
-
-**NAM / IR conversion.** Choose the conversion in the import dialog. NAM defaults to
-Accurate and IRs to Stomp Manager (original); the last choice for each is remembered. **Accurate** uses the [open-stomp](https://github.com/JackMechem/open-stomp-lib)
-converter (MIT / Apache-2.0, installed by `requirements.txt` on Windows). The pedal does not run NAM
-directly: a user amp is two 512-tap filters around a fixed saturation, and on stock/0.5.2 an IR slot
-plays only 384 taps (8 ms). Accurate fits those to the whole model or IR instead of taking the start
-of the file. On ten Marshall cab IRs it cut the error of what a 384-tap slot plays from 3.25 to
-1.54 dB rms (`tests/test_conversion.py`); NAM fitting takes about a minute per model.
-**Stomp Manager (original)** reproduces the official conversion (IR within 1e-7 of a captured
-upload; NAM within 0.015 %, using the official excitation read from Stomp Manager's converter DLL,
-set `SORAN_NAM_DLL` if it isn't found). Without open-stomp, imports fall back to the old path.
-
-**On 0.6.0, import IRs with Stomp Manager (original)**, the default. It uploads the IR's real first 2048
-samples, of which 0.6.0 plays 1024. Accurate squeezes the IR into 384 taps, so it gains nothing there.
-For NAM, Accurate stays the better choice on every firmware.
-Close Stomp Manager while using the editor.
-
-## GitHub Pages editor
-
-Open **https://nvhhh.github.io/stomp_extra/**. The interface is hosted on Pages;
-USB MIDI and NAM conversion run on your Windows PC through the local bridge.
-Files are sent directly to the bridge, not uploaded to GitHub.
-
-1. Clone this repository and install Python dependencies as described above.
-2. Connect the pedal by USB and close other pedal editors/bridge instances.
-3. Run `.venv/Scripts/python editor/server.py --pages` from the project folder.
-4. In Chrome or Edge, click **Connect bridge** and allow local network access
-   if prompted. The default port is 8765; use `--port 8766` and the matching
-   port in the page if needed.
-
-NAM imports still require Stomp Manager's converter DLL (see above).
-If browser policy blocks local access, use the local editor URL printed by the
-bridge. The bridge listens only on loopback and accepts the hosted origin only
-when started with `--pages`. The workflow deploys editor changes pushed to main.
-
-## Credits
+## Credits and license notes
 
 NAM and IR conversion uses [open-stomp](https://github.com/JackMechem/open-stomp-lib)
-(© 2026 The open-stomp contributors, MIT OR Apache-2.0). It also documented the pedal-side
-NAM/IR structure that the Accurate conversion relies on. See
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [`licenses/open-stomp/`](licenses/open-stomp/).
+(© 2026 The open-stomp contributors, MIT OR Apache-2.0), see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Soran's firmware and Stomp Manager files are not
+included in this repository.
 
-## CLI reference
+## For developers
 
-| | |
-|---|---|
-| `cfw.py info <bin>` | container details, region map, CFW tag |
-| `cfw.py unpack <bin> <dir>` / `pack <dir> <bin>` | raw editing of the flat image |
-| `cfw.py build` | stock + `cfw.toml` patches → custom `.bin` |
-| `cfw.py diff <a> <b>` | changed ranges, mapped to regions |
-| `cfw.py devices` / `query` | find the pedal / read version in DFU mode |
-| `cfw.py flash <bin>` | write over USB HID in DFU mode |
-
-## Layout
-
-```
-cfw.py            CLI
-cfw.toml          build config (base firmware + patch list)
-nuxfw/            container format, flash layout, patch engine, DFU transport + simulator
-patches/          feature patches (see patches/README.md)
-tools/            analysis helpers (disassembler, structure survey)
-docs/FORMAT.md    everything reverse engineered: hardware, flash map, file format, DFU protocol
+```sh
+# put the stock JME-EN_V1.1.1_modified.bin in firmware/stock/ (from the Soran updater zip)
+.venv/Scripts/python cfw.py build -c cfw-long-ir-test.toml     # current release config
+.venv/Scripts/python cfw.py selftest -c cfw-long-ir-test.toml  # format, patch and simulated DFU checks
 ```
 
-Vendor binaries (`firmware/stock/*.bin`, `vendor/`) are Soran's and are gitignored, not
-redistributed.
+`cfw.py` also has `info`, `diff`, `unpack`/`pack`, `devices`/`query` and `flash`. Docs:
+[flash map, file format and DFU protocol](docs/FORMAT.md), [USB MIDI protocol](docs/PROTOCOL.md),
+[long IRs](docs/LONG-IR.md), [captures](docs/PARTITIONED-CAPTURE.md),
+[patches](patches/README.md). Emulator tests are in `tests/`.
