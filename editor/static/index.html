@@ -215,6 +215,9 @@ function render(){
   renderDevice();
 }
 
+// Block position of a parameter: CC = cc_base + pos, record offset = count_offset + 1 + pos.
+// User IR cabs show only LOW CUT/HIGH CUT/VOLUME, which sit at positions 2..4 of the cab block.
+const paramPos = (p,i) => Number.isInteger(p.pos) ? p.pos : i;
 function renderEditor(rec){
   const mod = moduleBySlot(focusSlot), v = rec[mod.slot], model = selectedModel(rec,mod.slot), on = !(v & 0x40);
   $('#modName').textContent = mod.label;
@@ -233,7 +236,7 @@ function renderEditor(rec){
   if (params.dataset.key !== pkey) {
     params.dataset.key = pkey;
     params.innerHTML = (m ? m.params : []).map((p,i) => {
-      const cc = mod.cc_base + i;
+      const cc = mod.cc_base + paramPos(p,i);
       if (p.type === 'enum') return `<div class="param"><label>${p.label}${p.verified===false?' <span class="muted">(order unverified)</span>':''}</label>
         <select aria-label="${escapeHTML(p.label)}" data-cc="${cc}" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px">${p.options.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select><output></output></div>`;
       return `<div class="param"><label>${p.label}</label><input type="range" aria-label="${escapeHTML(p.label)}" min="0" max="100" data-cc="${cc}"><output></output></div>`;

@@ -40,6 +40,12 @@ UNVERIFIED_ENUM = {
 # Values Stomp Manager shows next to a selector label (OCR picked them up as extra lines).
 VALUE_TOKENS = set(MIC) | set(POSITION) | {"I-J47", "CHORUS", "VIBRATO", "MINOR", "MAJOR", "C", "c", "e"}
 
+# User IR cabs (models 30..39) keep the built-in cab block layout: the pedal resets MIC/POSITION to 0
+# and Stomp Manager only shows LOW CUT, HIGH CUT and VOLUME, which stay at positions 2..4 (CC 28..30,
+# record offsets 32..34). Selecting an IR slot on the pedal loads [0, 0, 0, 100, 50] into the block.
+IR_CAB_LABELS = ["LOW CUT(Hz)", "HIGH CUT(Hz)", "VOLUME"]
+IR_CAB_FIRST_POS = 2
+
 EQ10 = ["GAIN(dB)", "31Hz(dB)", "62.5Hz(dB)", "125Hz(dB)", "250Hz(dB)", "500Hz(dB)",
         "1kHz(dB)", "2kHz(dB)", "4kHz(dB)", "8kHz(dB)", "16kHz(dB)", "VOLUME(dB)"]
 
@@ -51,7 +57,9 @@ def clean_label(s):
     return LABEL_FIX.get(s, s)
 
 
-def params_for(mod, name, labels):
+def params_for(mod, name, labels, first_pos=0):
+    """Parameters in block order. 'pos' = position in the block: CC = cc_base + pos,
+    record offset = count_offset + 1 + pos."""
     if mod == "EQ" and name.startswith("10"):
         labels = EQ10
     out = []
@@ -64,7 +72,7 @@ def params_for(mod, name, labels):
             after_selector = False
             continue
         after_selector = lab in ("MIC", "POSITION", "MODE", "KEY")
-        p = {"label": lab}
+        p = {"label": lab, "pos": first_pos + len(out)}
         if mod == "CAB" and lab == "MIC":
             p.update(type="enum", options=MIC)
         elif mod == "CAB" and lab == "POSITION":
@@ -90,17 +98,17 @@ def main():
                 user = {"kind": "nam", "slot": m["num"] - 31}
             if key == "CAB" and m["num"] > 30:
                 user = {"kind": "ir", "slot": m["num"] - 31}
-            labels = m["labels"]
+            labels, first_pos = m["labels"], 0
             if user and key == "CAB":
-                labels = ["LOW CUT(Hz)", "HIGH CUT(Hz)", "VOLUME"]
+                labels, first_pos = IR_CAB_LABELS, IR_CAB_FIRST_POS
             models.append({"index": m["num"] - 1, "name": name if not user else None,
-                           "user": user, "params": params_for(key, name, labels)})
+                           "user": user, "params": params_for(key, name, labels, first_pos)})
         if key == "CAB":  # IR slot 1 was empty in the scrape; user slots share one layout
             have = {mm["index"] for mm in models}
             for i in range(30, 40):
                 if i not in have:
                     models.append({"index": i, "name": None, "user": {"kind": "ir", "slot": i - 30},
-                                   "params": params_for("CAB", "", ["LOW CUT(Hz)", "HIGH CUT(Hz)", "VOLUME"])})
+                                   "params": params_for("CAB", "", IR_CAB_LABELS, IR_CAB_FIRST_POS)})
             models.sort(key=lambda mm: mm["index"])
         cat["modules"].append({"key": key, "label": label, "slot": slot, "count_offset": cnt,
                                "cc_base": cc, "capacity": cap, "color": color, "models": models})

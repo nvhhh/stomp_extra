@@ -207,8 +207,8 @@ class App:
             if extended:
                 fx = ({'params': []} if capture else
                       next(m for m in CATALOG['modules'] if m['slot'] == 0)['models'][model-32])
-                defaults = [0 if i < len(fx['params']) and fx['params'][i].get('type') == 'enum'
-                            else 50 for i in range(4)]
+                enum_pos = {q.get('pos', i) for i, q in enumerate(fx['params']) if q.get('type') == 'enum'}
+                defaults = [0 if i in enum_pos else 50 for i in range(4)]
                 for i in range(4):
                     p.cc(mod['cc_base'] + i, defaults[i])
                 off = mod['count_offset'] + 1
