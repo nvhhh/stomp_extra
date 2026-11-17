@@ -3,12 +3,25 @@
 A reproducible build pipeline for custom firmware on the Soran Dual Stomp Lite (JME-02), and by
 extension the Dual Stomp and Tiny Stomp, which share the same NUX "JME" platform.
 
-The latest tested firmware is **0.5.2-deadline**, configured in
-`cfw-fx-fixed-deadline.toml`. It includes expanded effects, 20 capture slots
-(10 USER AMP slots for AMP and 10 FX slots for EQ/MOD), and optimized capture
+The latest firmware is **0.6.0-longir-test**, configured in `cfw-long-ir-test.toml`. It is
+0.5.2 plus **1024-tap user cab IRs**: the 10 IR slots play the IR's first 1024 samples (21.3 ms)
+instead of 384 (8 ms), with no added latency. On eleven cab IRs the error of what the pedal plays
+dropped from 1.43 to 0.11 dB rms (0.20 dB in the 31–160 Hz bands). It uses partitioned FFT
+convolution, which has the same output as a direct 1024-tap filter, and adds about 700 emulator
+instructions per audio callback. Built-in cabs and everything else behave exactly as in 0.5.2. See
+[long-IR design and results](docs/LONG-IR.md). On the pedal, 60 s with a user NAM amp, a user IR
+and a MOD capture ran at a median of 81k of the 100k-cycle budget (highest sampled 92k), with no
+overruns or guard trips. The full AMP + EQ + MOD capture setup hasn't been measured on this build yet.
+
+The previous release, **0.5.2-deadline** (`cfw-fx-fixed-deadline.toml`), added expanded effects,
+20 capture slots (10 USER AMP slots for AMP and 10 FX slots for EQ/MOD), and optimized capture
 processing. See [capture implementation and hardware results](docs/PARTITIONED-CAPTURE.md).
 Earlier configurations are retained for development history; the default
 `cfw.toml` builds the original feature-preserving baseline below.
+
+**Before flashing any CFW**, back up your presets, user captures, IRs and NAMs. A full image
+erases part of the user capture storage (FX01 on recent builds), so restore captures afterwards
+(`tools/restore_capture_session.py`), and re-upload IRs/NAMs if any slot comes back empty.
 
 The editor supports effect-chain rearrangement, editable capture names during
 NAM import (defaulting to the filename), and separate AMP/FX libraries with
@@ -53,16 +66,20 @@ It's a local editor that talks to the pedal over USB MIDI:
 Protocol details are in `docs/PROTOCOL.md`. `tests/test_jme_capture.py` checks the implementation
 against recorded Stomp Manager traffic.
 
-**NAM / IR conversion.** Imports default to **Accurate**, which uses the
-[open-stomp](https://github.com/JackMechem/open-stomp-lib) converter (MIT / Apache-2.0,
-installed by `requirements.txt` on Windows). The pedal does not run NAM or long IRs: a user amp is
-two 512-tap filters around a fixed saturation, and an IR slot plays only 384 taps (8 ms).
-Accurate fits those to the whole model or IR instead of taking the start of the file.
-On ten Marshall cab IRs it cut the error of what the pedal plays from 3.25 to 1.54 dB rms
-(`tests/test_conversion.py`); NAM fitting takes about a minute per model.
-**Exact Stomp Manager** reproduces the official conversion (IR within 1e-7 of a captured
+**NAM / IR conversion.** Choose the conversion in the import dialog (the choice is
+remembered). **Accurate** uses the [open-stomp](https://github.com/JackMechem/open-stomp-lib)
+converter (MIT / Apache-2.0, installed by `requirements.txt` on Windows). The pedal does not run NAM
+directly: a user amp is two 512-tap filters around a fixed saturation, and on stock/0.5.2 an IR slot
+plays only 384 taps (8 ms). Accurate fits those to the whole model or IR instead of taking the start
+of the file. On ten Marshall cab IRs it cut the error of what a 384-tap slot plays from 3.25 to
+1.54 dB rms (`tests/test_conversion.py`); NAM fitting takes about a minute per model.
+**Stomp Manager (original)** reproduces the official conversion (IR within 1e-7 of a captured
 upload; NAM within 0.015 %, using the official excitation read from Stomp Manager's converter DLL,
 set `SORAN_NAM_DLL` if it isn't found). Without open-stomp, imports fall back to the old path.
+
+**On 0.6.0, import IRs with Stomp Manager (original).** It uploads the IR's real first 2048
+samples, of which 0.6.0 plays 1024. Accurate squeezes the IR into 384 taps, so it gains nothing there.
+For NAM, Accurate stays the better choice on every firmware.
 Close Stomp Manager while using the editor.
 
 ## GitHub Pages editor

@@ -81,6 +81,21 @@ The 0.5.2 capture regression suite (`test_capture_partitioned.py`) also passes a
 (same 131.7 dB SNR and instruction counts). The only exception is one test that asserts the 0.5.2 MPU
 value; that difference is intended. Container selftest passed.
 
+## Hardware result (2026-11-17)
+
+Flashed `soran-cfw-0.6.0-longir-test-on-1.1.1.bin` (sha256 `43574f31…31eb`), 29,937 records in 96 s,
+normal boot. 60 s of telemetry (`work/longir-0.6.0-60s.jsonl`) with a user NAM amp, user IR slot 1
+(1024-tap path) and a MOD capture active, no EQ capture:
+
+- 359,350 callbacks in 60 s (no missed callbacks)
+- elapsed per callback: median 80,906, 95th percentile 88,732, highest sampled 92,024 of 100,012 cycles
+- no sample over budget, peak unchanged during the run, MOD capture stayed active (no guard trip),
+  0 unfinished passes
+
+The peak since boot was 110,253 cycles. It was set within the first ~3 minutes after boot, before
+logging started (likely during loading). Not yet measured: the full AMP + EQ + MOD capture setup,
+and an A/B of user IR against a built-in cab on the same preset.
+
 ## Risks / hardware test plan
 
 - **CPU budget:** about +700 instructions per callback on average, +1,200 at peak, while a user IR
