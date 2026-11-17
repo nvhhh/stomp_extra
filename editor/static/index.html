@@ -42,12 +42,14 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
   <section id="content">
     <div class="card" id="bridgePanel" hidden>
       <h2 style="margin-top:0">Connect your pedal</h2>
-      <p>This hosted editor uses the Stomp Bridge on your PC for USB MIDI and NAM imports. Your presets and captures stay on your computer.</p>
-      <p>From the project folder, start the bridge:</p>
-      <pre style="white-space:pre-wrap;overflow-wrap:anywhere">.venv/Scripts/python editor/server.py --pages</pre>
-      <p class="muted">Close other pedal editors first. Use Chrome or Edge and allow local network access when prompted.</p>
-      <div class="row"><label for="bridgePort">Bridge port</label><input id="bridgePort" type="number" min="1024" max="65535" value="8765" style="width:110px"><button class="primary" id="bridgeConnect">Connect bridge</button><a href="https://github.com/nvhhh/stomp_extra#github-pages-editor" style="color:var(--accent)">Setup instructions</a></div>
-      <p id="bridgeMessage" role="status" class="muted">Start the bridge, then connect here.</p>
+      <p>Connect the pedal by USB, close Stomp Manager and other pedal editors, then connect. The editor talks to the pedal directly from this browser (Chrome or Edge). NAM and IR files are converted on your computer and never uploaded anywhere.</p>
+      <div class="row"><button class="primary" id="directConnect">Connect pedal</button><span class="muted small">When the browser asks, allow MIDI device control.</span></div>
+      <p id="directMessage" role="status" class="muted"></p>
+      <details style="margin-top:14px"><summary class="muted">Use the Python bridge instead</summary>
+        <p class="small">Only needed for the Stomp Manager (original) NAM conversion. From the project folder, run <code>.venv/Scripts/python editor/server.py --pages</code>, then connect:</p>
+        <div class="row"><label for="bridgePort">Bridge port</label><input id="bridgePort" type="number" min="1024" max="65535" value="8765" style="width:110px"><button id="bridgeConnect">Connect bridge</button><a href="https://github.com/nvhhh/stomp_extra#editor" style="color:var(--accent)">Setup instructions</a></div>
+        <p id="bridgeMessage" role="status" class="muted small"></p>
+      </details>
     </div>
     <div id="err"></div>
     <div class="card">
@@ -112,12 +114,13 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
     <div class="dialog-actions"><button type="button" id="namImportCancel">Cancel</button><button type="submit" class="primary" id="namImportSubmit">Import capture</button></div>
   </form>
 </dialog>
+<script src="pedal.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const hosted = location.hostname !== '127.0.0.1' && location.hostname !== 'localhost';
-let apiBase = '', polling = false;
+let apiBase = '', polling = false, direct = null;   // direct: Web MIDI handler (pedal.js) instead of the bridge
 const lockEditor=locked=>{document.querySelectorAll('#content > .card:not(#bridgePanel), #presets, header .vol, #btnConnect').forEach(el=>el.inert=locked);};
-const apiFetch = (path, options={}) => fetch(apiBase+path, {...options, ...(hosted?{targetAddressSpace:'loopback'}:{})});
+const apiFetch = (path, options={}) => direct ? direct(path, options) : fetch(apiBase+path, {...options, ...(hosted?{targetAddressSpace:'loopback'}:{})});
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let CAT = null, S = null, version = -1, focusSlot = 1, slotUpload = null;
 let pendingNam = null, namSubmitting = false;
@@ -295,8 +298,10 @@ function updateNamForm(){
   $('#namImportCancel').disabled=namSubmitting;
   $('#namUseFilename').disabled=namSubmitting;
   field.disabled=namSubmitting;
-  document.querySelectorAll('input[name="convMethod"]').forEach(r=>r.disabled=namSubmitting);
+  document.querySelectorAll('input[name="convMethod"]').forEach(r=>r.disabled=namSubmitting||!convAvailable(r.value));
 }
+// Without the Python bridge, NAM can only use Accurate: the original conversion needs Stomp Manager's converter.
+function convAvailable(method){ return !(direct && pendingNam?.kind==='nam' && method==='app'); }
 function useNamFilename(){
   if(!pendingNam)return;
   const original=pendingNam.file.name.replace(/\.[^.]+$/, '').trim();
@@ -317,11 +322,11 @@ function openNamImport(file,slot,kind='nam'){
   $('#namImportSubmit').textContent=ir?'Import IR':'Import capture';
   $('#convAccurateHelp').textContent=ir
     ?'Fits 8 ms (384 samples) to the whole IR. Only for stock or 0.5.2 firmware, which play just 8 ms.'
-    :'Fits the pedal’s filters to the whole model. Closest to the original; takes about a minute.';
+    :`Fits the pedal’s filters to the whole model. Closest to the original; takes ${direct?'a few minutes in the browser':'about a minute'}.`;
   $('#convOriginalHelp').textContent=ir
     ?'Uploads the IR’s real start, as Stomp Manager does. Best on 0.6.0, which plays 21 ms (1024 samples).'
-    :'Converts the same way as Stomp Manager.';
-  const saved=savedConvMethod(kind);
+    :direct?'Needs the Python bridge (it uses Stomp Manager’s converter).':'Converts the same way as Stomp Manager.';
+  const stored=savedConvMethod(kind), saved=convAvailable(stored)?stored:'optimised';
   document.querySelectorAll('input[name="convMethod"]').forEach(r=>r.checked=r.value===saved);
   $('#namFileName').textContent=file.name;
   const current=ir?(S.ir[slot]?.used?S.ir[slot].name:''):captureName(slot);
@@ -339,7 +344,7 @@ function renderDevice(){
    <pre class="small" style="white-space:pre-wrap">${Object.entries(S.raw_state||{}).map(([k,v])=>`0x${k}: ${v}`).join('\n')}</pre>
    <h3 style="margin:20px 0 6px;font-size:15px">Credits</h3>
    <p class="muted small">NAM and IR conversion uses <a href="https://github.com/JackMechem/open-stomp-lib" target="_blank" rel="noopener" style="color:var(--accent)">open-stomp</a>
-   © 2026 The open-stomp contributors, MIT / Apache-2.0.</p>`;
+   © 2026 The open-stomp contributors, MIT / Apache-2.0. <a href="https://github.com/nvhhh/stomp_extra/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--accent)">Third-party notices</a></p>`;
 }
 
 // ---- interaction -------------------------------------------------------------------------
@@ -450,10 +455,27 @@ async function poll(){
     }
   }
 }
+async function loadCatalog(){ if(!CAT) CAT=await fetch('./catalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('catalog.json not found');return r.json();}); }
+function startEditor(){ lockEditor(false);$('#bridgePanel').hidden=true;render();poll(); }
+async function connectDirect(){
+  if(!window.DirectPedal?.supported()){
+    $('#directMessage').textContent='This browser can’t control MIDI devices. Use Chrome or Edge on a computer, or the Python bridge below.';return;
+  }
+  $('#directConnect').disabled=true;$('#directMessage').textContent='Connecting…';
+  try{
+    await loadCatalog();
+    direct=DirectPedal.start(CAT);
+    S=await apiFetch('/api/state').then(r=>r.json());version=S.version;
+    startEditor();
+  }catch(e){direct=null;$('#directMessage').textContent='Could not start the editor: '+e.message;}
+  finally{$('#directConnect').disabled=false;}
+}
 if(hosted){
-  $('#bridgePanel').hidden=false;$('#status').textContent='Bridge not connected';
-  $('#bridgePort').value=new URLSearchParams(location.search).get('port')||8765;
+  const port=new URLSearchParams(location.search).get('port');
+  $('#bridgePanel').hidden=false;$('#status').textContent='Pedal not connected';
+  $('#bridgePort').value=port||8765;
   lockEditor(true);
+  $('#directConnect').addEventListener('click',connectDirect);
   $('#bridgeConnect').addEventListener('click',async()=>{
     if(!$('#bridgePort').reportValidity())return;
     $('#bridgeConnect').disabled=true;$('#bridgeMessage').textContent='Connecting…';
@@ -462,11 +484,13 @@ if(hosted){
       const response=await apiFetch('/api/state',{signal:AbortSignal.timeout(8000)});
       if(!response.ok)throw new Error('Restart the bridge with --pages.');
       S=await response.json();version=S.version;
-      if(!CAT)CAT=await fetch('./catalog.json').then(r=>r.json());
-      lockEditor(false);$('#bridgePanel').hidden=true;render();poll();
+      await loadCatalog();
+      startEditor();
     }catch(e){$('#bridgeMessage').textContent='Could not connect. Start the bridge with --pages, check the port, and allow local network access in your browser.';}
     finally{$('#bridgeConnect').disabled=false;}
   });
+  if(port){$('#bridgePanel details').open=true;$('#bridgeConnect').click();}      // opened by the bridge itself
+  else navigator.permissions?.query({name:'midi',sysex:true}).then(p=>{if(p.state==='granted')connectDirect();}).catch(()=>{});
 }else fetch('/api/catalog').then(r=>r.json()).then(c=>{CAT=c;poll();});
 </script>
 </body>

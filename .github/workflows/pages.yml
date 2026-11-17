@@ -23,7 +23,7 @@ jobs:
       - name: Prepare editor
         run: |
           mkdir _site
-          cp editor/static/index.html _site/index.html
+          cp editor/static/index.html editor/static/pedal.js editor/static/convert-worker.js editor/static/stomp_convert.wasm _site/
           cp editor/catalog.json _site/catalog.json
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3

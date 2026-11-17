@@ -21,6 +21,9 @@ sys.path.insert(0, str(ROOT.parent))
 from nuxfw import irconv, jme, namconv  # noqa: E402
 
 CATALOG = json.loads((ROOT / "catalog.json").read_text(encoding="utf-8"))
+# Files the page loads next to index.html (direct Web MIDI mode and the in-browser converter).
+STATIC_TYPES = {"pedal.js": "text/javascript; charset=utf-8", "convert-worker.js": "text/javascript; charset=utf-8",
+                "stomp_convert.wasm": "application/wasm"}
 N_PRESETS, N_USER = 99, 10
 
 
@@ -334,10 +337,11 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         try:
-            if u.path in ("/", "/index.html"):
-                b = (ROOT / "static" / "index.html").read_bytes()
+            if u.path in ("/", "/index.html") or u.path.lstrip("/") in STATIC_TYPES:
+                name = "index.html" if u.path in ("/", "/index.html") else u.path.lstrip("/")
+                b = (ROOT / "static" / name).read_bytes()
                 self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Type", STATIC_TYPES.get(name, "text/html; charset=utf-8"))
                 self.send_header("Content-Length", str(len(b)))
                 self.end_headers()
                 self.wfile.write(b)
