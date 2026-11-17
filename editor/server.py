@@ -291,6 +291,25 @@ APP = App()
 
 
 class Handler(BaseHTTPRequestHandler):
+    def _origin_allowed(self):
+        origin = self.headers.get('Origin')
+        local = f'http://127.0.0.1:{self.server.server_port}'
+        return not origin or origin in (local, f'http://localhost:{self.server.server_port}', getattr(self.server, 'pages_origin', None))
+
+    def end_headers(self):
+        origin = self.headers.get('Origin')
+        if origin and self._origin_allowed():
+            self.send_header('Access-Control-Allow-Origin', origin)
+            self.send_header('Vary', 'Origin')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+            self.send_header('Access-Control-Expose-Headers', 'Content-Disposition')
+            self.send_header('Access-Control-Allow-Private-Network', 'true')
+        super().end_headers()
+
+    def do_OPTIONS(self):
+        self._json({}, 200 if self._origin_allowed() else 403)
+
     def log_message(self, *a):
         pass
 
@@ -307,6 +326,8 @@ class Handler(BaseHTTPRequestHandler):
         return self.rfile.read(n) if n else b""
 
     def do_GET(self):
+        if not self._origin_allowed():
+            return self._json({'error': 'Origin not allowed'}, 403)
         u = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         try:
@@ -339,6 +360,8 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"error": str(e)}, 500)
 
     def do_POST(self):
+        if not self._origin_allowed():
+            return self._json({'error': 'Origin not allowed'}, 403)
         u = urlparse(self.path)
         q = {k: unquote(v[0]) for k, v in parse_qs(u.query).items()}
         try:
@@ -379,13 +402,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--pages", action="store_true", help="Allow the hosted editor at https://nvhhh.github.io/stomp_extra/")
     a = ap.parse_args()
     srv = ThreadingHTTPServer(("127.0.0.1", a.port), Handler)
+    srv.pages_origin = 'https://nvhhh.github.io' if a.pages else None
     url = f"http://127.0.0.1:{a.port}"
     print(f"Stomp Editor running at {url}  (Ctrl+C to quit)", flush=True)
     threading.Thread(target=APP.connect, daemon=True).start()
     if not a.no_browser:
-        webbrowser.open(url)
+        webbrowser.open(f'https://nvhhh.github.io/stomp_extra/?port={a.port}' if a.pages else url)
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

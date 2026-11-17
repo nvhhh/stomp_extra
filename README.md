@@ -55,7 +55,25 @@ against recorded Stomp Manager traffic. NAM import uses the converter DLL that s
 Manager (set `SORAN_NAM_DLL` if it isn't found automatically).
 Close Stomp Manager while using the editor.
 
-## Commands
+## GitHub Pages editor
+
+Open **https://nvhhh.github.io/stomp_extra/**. The interface is hosted on Pages;
+USB MIDI and NAM conversion run on your Windows PC through the local bridge.
+Files are sent directly to the bridge, not uploaded to GitHub.
+
+1. Clone this repository and install Python dependencies as described above.
+2. Connect the pedal by USB and close other pedal editors/bridge instances.
+3. Run `.venv/Scripts/python editor/server.py --pages` from the project folder.
+4. In Chrome or Edge, click **Connect bridge** and allow local network access
+   if prompted. The default port is 8765; use `--port 8766` and the matching
+   port in the page if needed.
+
+NAM imports still require Stomp Manager's converter DLL (see above).
+If browser policy blocks local access, use the local editor URL printed by the
+bridge. The bridge listens only on loopback and accepts the hosted origin only
+when started with `--pages`. The workflow deploys editor changes pushed to main.
+
+## CLI reference
 
 | | |
 |---|---|

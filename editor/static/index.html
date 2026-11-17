@@ -40,6 +40,15 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
 <main>
   <nav id="presets" aria-label="Presets"></nav>
   <section id="content">
+    <div class="card" id="bridgePanel" hidden>
+      <h2 style="margin-top:0">Connect your pedal</h2>
+      <p>This hosted editor uses the Stomp Bridge on your PC for USB MIDI and NAM imports. Your presets and captures stay on your computer.</p>
+      <p>From the project folder, start the bridge:</p>
+      <pre style="white-space:pre-wrap;overflow-wrap:anywhere">.venv/Scripts/python editor/server.py --pages</pre>
+      <p class="muted">Close other pedal editors first. Use Chrome or Edge and allow local network access when prompted.</p>
+      <div class="row"><label for="bridgePort">Bridge port</label><input id="bridgePort" type="number" min="1024" max="65535" value="8765" style="width:110px"><button class="primary" id="bridgeConnect">Connect bridge</button><a href="https://github.com/nvhhh/stomp_extra#github-pages-editor" style="color:var(--accent)">Setup instructions</a></div>
+      <p id="bridgeMessage" role="status" class="muted">Start the bridge, then connect here.</p>
+    </div>
     <div id="err"></div>
     <div class="card">
       <div class="row">
@@ -99,6 +108,10 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
 </dialog>
 <script>
 const $ = s => document.querySelector(s);
+const hosted = location.hostname !== '127.0.0.1' && location.hostname !== 'localhost';
+let apiBase = '', polling = false;
+const lockEditor=locked=>{document.querySelectorAll('#content > .card:not(#bridgePanel), #presets, header .vol, #btnConnect').forEach(el=>el.inert=locked);};
+const apiFetch = (path, options={}) => fetch(apiBase+path, {...options, ...(hosted?{targetAddressSpace:'loopback'}:{})});
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let CAT = null, S = null, version = -1, focusSlot = 1, slotUpload = null;
 let pendingNam = null, namSubmitting = false;
@@ -113,15 +126,15 @@ async function changeChain(order){
   if(chainBusy || !S?.connected || S.task) return;
   chainBusy=true; render();
   try {
-    const r=await fetch('/api/chain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order})});
+    const r=await apiFetch('/api/chain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order})});
     const j=await r.json(); if(j.error) throw new Error(j.error);
-    const state=await fetch('/api/state').then(r=>r.json());
+    const state=await apiFetch('/api/state').then(r=>r.json());
     if(state.version>=version){S=state;version=state.version;}
   } catch(e){S.error=e.message;}
   finally {chainBusy=false;render();}
 }
 const hex2b = h => Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));
-const api = (p, body, raw) => fetch(p, {method: 'POST', body: raw ? body : JSON.stringify(body || {})})
+const api = (p, body, raw) => apiFetch(p, {method: 'POST', body: raw ? body : JSON.stringify(body || {})})
   .then(r => r.json()).then(j => { if (j.error) throw new Error(j.error); return j; })
   .catch(e => showErr(e.message));
 function showErr(m){ const e=$('#err'); e.textContent=m; e.style.display=m?'block':'none'; }
@@ -330,7 +343,16 @@ $('#btnSave').addEventListener('click', () => {
   if (idx !== S.current && !confirm(`Overwrite P${String(idx+1).padStart(2,'0')} "${S.presets[idx]}"?`)) return;
   api('/api/save', {index: idx, name});
 });
-$('#btnExport').addEventListener('click', () => { if (S.current != null) location.href = `/api/export?index=${S.current}`; });
+$('#btnExport').addEventListener('click', async () => {
+  if (S?.current == null) return;
+  try {
+    const response=await apiFetch(`/api/export?index=${S.current}`);
+    if(!response.ok)throw new Error('Preset export failed');
+    const url=URL.createObjectURL(await response.blob()), a=document.createElement('a');
+    a.href=url;a.download=(response.headers.get('Content-Disposition')||'').match(/filename="([^"]+)"/)?.[1]||'preset.jmePreset';
+    a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
+  }catch(e){showErr(e.message);}
+});
 $('#btnImport').addEventListener('click', () => $('#fImport').click());
 $('#fImport').addEventListener('change', async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
@@ -368,7 +390,7 @@ $('#namImportForm').addEventListener('submit',async e=>{
   const {file,slot}=pendingNam, name=$('#namImportName').value.trim();
   namSubmitting=true;updateNamForm();$('#namImportError').hidden=true;
   try {
-    const response=await fetch(`/api/nam?slot=${slot}&name=${encodeURIComponent(name)}`,{method:'POST',body:await file.arrayBuffer()});
+    const response=await apiFetch(`/api/nam?slot=${slot}&name=${encodeURIComponent(name)}`,{method:'POST',body:await file.arrayBuffer()});
     const result=await response.json();
     if(!response.ok || result.error)throw new Error(result.error || 'The capture could not be imported.');
     $('#namImport').close();
@@ -380,12 +402,34 @@ document.addEventListener('keydown',e=>{
 });
 
 async function poll(){
+  if(polling)return;polling=true;
   for (;;) {
-    try { S = await (await fetch(`/api/state?since=${version}`)).json(); version = S.version; render(); }
-    catch (e) { $('#status').textContent = 'Editor server not running'; await new Promise(r => setTimeout(r, 2000)); }
+    try { const response=await apiFetch(`/api/state?since=${version}`);if(!response.ok)throw new Error('Bridge unavailable');S = await response.json(); version = S.version; render(); }
+    catch (e) {
+      $('#status').textContent = 'Editor server not running';
+      if(hosted){polling=false;$('#bridgePanel').hidden=false;$('#bridgeMessage').textContent='Bridge connection lost. Check the bridge and reconnect.';lockEditor(true);return;}
+      await new Promise(r => setTimeout(r, 2000));
+    }
   }
 }
-fetch('/api/catalog').then(r => r.json()).then(c => { CAT = c; poll(); });
+if(hosted){
+  $('#bridgePanel').hidden=false;$('#status').textContent='Bridge not connected';
+  $('#bridgePort').value=new URLSearchParams(location.search).get('port')||8765;
+  lockEditor(true);
+  $('#bridgeConnect').addEventListener('click',async()=>{
+    if(!$('#bridgePort').reportValidity())return;
+    $('#bridgeConnect').disabled=true;$('#bridgeMessage').textContent='Connecting…';
+    apiBase=`http://127.0.0.1:${Number($('#bridgePort').value)}`;
+    try{
+      const response=await apiFetch('/api/state',{signal:AbortSignal.timeout(8000)});
+      if(!response.ok)throw new Error('Restart the bridge with --pages.');
+      S=await response.json();version=S.version;
+      if(!CAT)CAT=await fetch('./catalog.json').then(r=>r.json());
+      lockEditor(false);$('#bridgePanel').hidden=true;render();poll();
+    }catch(e){$('#bridgeMessage').textContent='Could not connect. Start the bridge with --pages, check the port, and allow local network access in your browser.';}
+    finally{$('#bridgeConnect').disabled=false;}
+  });
+}else fetch('/api/catalog').then(r=>r.json()).then(c=>{CAT=c;poll();});
 </script>
 </body>
 </html>
