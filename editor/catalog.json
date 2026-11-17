@@ -1,0 +1,3270 @@
+{
+ "modules": [
+  {
+   "key": "GATE",
+   "label": "Gate",
+   "slot": 6,
+   "count_offset": 8,
+   "cc_base": 8,
+   "capacity": 4,
+   "color": "#b5b02a",
+   "models": [
+    {
+     "index": 0,
+     "name": "Noise Gate",
+     "user": null,
+     "params": [
+      {
+       "label": "THRESHOLD"
+      },
+      {
+       "label": "DECAY"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "OD/FX",
+   "label": "OD/FX",
+   "slot": 0,
+   "count_offset": 13,
+   "cc_base": 12,
+   "capacity": 6,
+   "color": "#e3b400",
+   "models": [
+    {
+     "index": 0,
+     "name": "Red Comp",
+     "user": null,
+     "params": [
+      {
+       "label": "OUTPUT"
+      },
+      {
+       "label": "SENSITIVITY"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "RS Comp",
+     "user": null,
+     "params": [
+      {
+       "label": "SUSTAIN"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "name": "Yellow Dist",
+     "user": null,
+     "params": [
+      {
+       "label": "OUTPUT"
+      },
+      {
+       "label": "DISTORTION"
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "name": "Boost RC",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "TREBLE"
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "name": "Boost AC",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "TREBLE"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "name": "DS1",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "name": "TS9",
+     "user": null,
+     "params": [
+      {
+       "label": "DRIVE"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 7,
+     "name": "BD2",
+     "user": null,
+     "params": [
+      {
+       "label": "LEVEL"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "GAIN"
+      }
+     ]
+    },
+    {
+     "index": 8,
+     "name": "Klone",
+     "user": null,
+     "params": [
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "DRIVE"
+      },
+      {
+       "label": "TONE"
+      }
+     ]
+    },
+    {
+     "index": 9,
+     "name": "Ratt2",
+     "user": null,
+     "params": [
+      {
+       "label": "DIST"
+      },
+      {
+       "label": "FILTER"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 10,
+     "name": "Red Drive",
+     "user": null,
+     "params": [
+      {
+       "label": "DRIVE"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 11,
+     "name": "Cruncher",
+     "user": null,
+     "params": [
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "GAIN"
+      }
+     ]
+    },
+    {
+     "index": 12,
+     "name": "Muff",
+     "user": null,
+     "params": [
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "SUSTAIN"
+      }
+     ]
+    },
+    {
+     "index": 13,
+     "name": "Boost",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN BOOST"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 14,
+     "name": "Face Fuzz",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "OUTPUT"
+      }
+     ]
+    },
+    {
+     "index": 15,
+     "name": "ST Drive",
+     "user": null,
+     "params": [
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "FILTER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "AMP",
+   "label": "Amp",
+   "slot": 1,
+   "count_offset": 20,
+   "cc_base": 18,
+   "capacity": 8,
+   "color": "#ef4a1e",
+   "models": [
+    {
+     "index": 0,
+     "name": "Black Twin",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "Tweed 5F1",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "name": "Bassguy",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "name": "Prince Rev",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "name": "Tweed 5F8",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "name": "Deluxe Rev",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "name": "Bdotone CL",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 7,
+     "name": "Voxy 30HW",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 8,
+     "name": "Mar J800",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 9,
+     "name": "Mar J45",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 10,
+     "name": "Mar Plexi100",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 11,
+     "name": "Jazz CL",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 12,
+     "name": "Mes Rector",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 13,
+     "name": "Mes MKIV Lead",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 14,
+     "name": "Mes MKV Red",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 15,
+     "name": "Mes LStar CL",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 16,
+     "name": "Cornfed M50",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 17,
+     "name": "ODS-100",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 18,
+     "name": "Spawn Qrod",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 19,
+     "name": "Soloist 100",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 20,
+     "name": "Fryman HB",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 21,
+     "name": "Fryman DS",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 22,
+     "name": "PVH 61",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 23,
+     "name": "Eddie 51",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 24,
+     "name": "2Rock J35",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 25,
+     "name": "Ampug SV Bass",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 26,
+     "name": "Ampug Port Bass",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 27,
+     "name": "FR Bass",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 28,
+     "name": "Mes 400 Bass",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 29,
+     "name": "Agula DP751",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 30,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 0
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 31,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 1
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 32,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 2
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 33,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 3
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 34,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 4
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 35,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 5
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 36,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 6
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 37,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 7
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 38,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 8
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    },
+    {
+     "index": 39,
+     "name": null,
+     "user": {
+      "kind": "nam",
+      "slot": 9
+     },
+     "params": [
+      {
+       "label": "GAIN"
+      },
+      {
+       "label": "BASS"
+      },
+      {
+       "label": "MIDDLE"
+      },
+      {
+       "label": "TREBLE"
+      },
+      {
+       "label": "PRESENCE"
+      },
+      {
+       "label": "MASTER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "CAB",
+   "label": "Cab",
+   "slot": 2,
+   "count_offset": 29,
+   "cc_base": 26,
+   "capacity": 6,
+   "color": "#ef7c12",
+   "models": [
+    {
+     "index": 0,
+     "name": "Twin 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "Tweed 110",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "name": "Bassguy 410",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "name": "Prince 112",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "name": "Tweed 210",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "name": "Deluxe 112",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "name": "Bdotone 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 7,
+     "name": "Voxy 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 8,
+     "name": "Mar G12M 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 9,
+     "name": "Mar Silver 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 10,
+     "name": "Mar V30 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 11,
+     "name": "Jazz 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 12,
+     "name": "Mes OS 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 13,
+     "name": "Mes Trad 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 14,
+     "name": "Mes V30 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 15,
+     "name": "Mes EV 112",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 16,
+     "name": "Cornfed 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 17,
+     "name": "ODS 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 18,
+     "name": "Spawn 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 19,
+     "name": "SLO 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 20,
+     "name": "Fryman 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 21,
+     "name": "Fryman 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 22,
+     "name": "PVH 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 23,
+     "name": "Eddie 412",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 24,
+     "name": "2Rock 212",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 25,
+     "name": "Ampug 810",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 26,
+     "name": "Ampug 410",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 27,
+     "name": "FR 210",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 28,
+     "name": "Mes 410",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 29,
+     "name": "Agula 810",
+     "user": null,
+     "params": [
+      {
+       "label": "MIC",
+       "type": "enum",
+       "options": [
+        "M160",
+        "E906",
+        "MD421",
+        "R121",
+        "SM57",
+        "SM58",
+        "SM7B",
+        "U47"
+       ]
+      },
+      {
+       "label": "POSITION",
+       "type": "enum",
+       "options": [
+        "EDGE",
+        "MIDDLE",
+        "CENTER"
+       ]
+      },
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 30,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 0
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 31,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 1
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 32,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 2
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 33,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 3
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 34,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 4
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 35,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 5
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 36,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 6
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 37,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 7
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 38,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 8
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    },
+    {
+     "index": 39,
+     "name": null,
+     "user": {
+      "kind": "ir",
+      "slot": 9
+     },
+     "params": [
+      {
+       "label": "LOW CUT(Hz)"
+      },
+      {
+       "label": "HIGH CUT(Hz)"
+      },
+      {
+       "label": "VOLUME"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "EQ",
+   "label": "EQ",
+   "slot": 7,
+   "count_offset": 36,
+   "cc_base": 32,
+   "capacity": 12,
+   "color": "#b07ce6",
+   "models": [
+    {
+     "index": 0,
+     "name": "6-band EQ",
+     "user": null,
+     "params": [
+      {
+       "label": "100Hz(dB)"
+      },
+      {
+       "label": "220Hz(dB)"
+      },
+      {
+       "label": "500Hz(dB)"
+      },
+      {
+       "label": "1.2kHz(dB)"
+      },
+      {
+       "label": "2.5kHz(dB)"
+      },
+      {
+       "label": "6.4kHz(dB)"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "10-band EQ",
+     "user": null,
+     "params": [
+      {
+       "label": "GAIN(dB)"
+      },
+      {
+       "label": "31Hz(dB)"
+      },
+      {
+       "label": "62.5Hz(dB)"
+      },
+      {
+       "label": "125Hz(dB)"
+      },
+      {
+       "label": "250Hz(dB)"
+      },
+      {
+       "label": "500Hz(dB)"
+      },
+      {
+       "label": "1kHz(dB)"
+      },
+      {
+       "label": "2kHz(dB)"
+      },
+      {
+       "label": "4kHz(dB)"
+      },
+      {
+       "label": "8kHz(dB)"
+      },
+      {
+       "label": "16kHz(dB)"
+      },
+      {
+       "label": "VOLUME(dB)"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "MOD",
+   "label": "Mod",
+   "slot": 3,
+   "count_offset": 49,
+   "cc_base": 44,
+   "capacity": 4,
+   "color": "#3fae2a",
+   "models": [
+    {
+     "index": 0,
+     "name": "Chorus-1",
+     "user": null,
+     "params": [
+      {
+       "label": "INTENSITY"
+      },
+      {
+       "label": "DEPTH"
+      },
+      {
+       "label": "RATE"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "Chorus-2",
+     "user": null,
+     "params": [
+      {
+       "label": "RATE"
+      },
+      {
+       "label": "DEPTH"
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "name": "Stereo Chorus",
+     "user": null,
+     "params": [
+      {
+       "label": "INTENSITY"
+      },
+      {
+       "label": "WIDTH"
+      },
+      {
+       "label": "RATE"
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "name": "Vibrato",
+     "user": null,
+     "params": [
+      {
+       "label": "RATE"
+      },
+      {
+       "label": "DEPTH"
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "name": "Detune",
+     "user": null,
+     "params": [
+      {
+       "label": "MIX"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "name": "Flanger",
+     "user": null,
+     "params": [
+      {
+       "label": "LEVEL"
+      },
+      {
+       "label": "RATE"
+      },
+      {
+       "label": "WIDTH"
+      },
+      {
+       "label": "FEEDBACK"
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "name": "Phaser 90",
+     "user": null,
+     "params": [
+      {
+       "label": "SPEED"
+      }
+     ]
+    },
+    {
+     "index": 7,
+     "name": "Phaser 100",
+     "user": null,
+     "params": [
+      {
+       "label": "INTENSITY"
+      },
+      {
+       "label": "SPEED"
+      }
+     ]
+    },
+    {
+     "index": 8,
+     "name": "Chorus+",
+     "user": null,
+     "params": [
+      {
+       "label": "SPEED"
+      },
+      {
+       "label": "WIDTH"
+      },
+      {
+       "label": "MODE",
+       "type": "enum",
+       "options": [
+        "#0",
+        "#1"
+       ],
+       "verified": false
+      },
+      {
+       "label": "INTENSITY"
+      }
+     ]
+    },
+    {
+     "index": 9,
+     "name": "Uni Vibe",
+     "user": null,
+     "params": [
+      {
+       "label": "SPEED"
+      },
+      {
+       "label": "VOLUME"
+      },
+      {
+       "label": "INTENSITY"
+      },
+      {
+       "label": "MODE",
+       "type": "enum",
+       "options": [
+        "#0",
+        "#1"
+       ],
+       "verified": false
+      }
+     ]
+    },
+    {
+     "index": 10,
+     "name": "Tremolo",
+     "user": null,
+     "params": [
+      {
+       "label": "RATE"
+      },
+      {
+       "label": "DEPTH"
+      }
+     ]
+    },
+    {
+     "index": 11,
+     "name": "Chorus-3",
+     "user": null,
+     "params": [
+      {
+       "label": "RATE"
+      },
+      {
+       "label": "DEPTH"
+      },
+      {
+       "label": "TONE"
+      }
+     ]
+    },
+    {
+     "index": 12,
+     "name": "Harmony",
+     "user": null,
+     "params": [
+      {
+       "label": "KEY",
+       "type": "enum",
+       "options": [
+        "#0",
+        "#1",
+        "#2",
+        "#3",
+        "#4",
+        "#5",
+        "#6",
+        "#7",
+        "#8",
+        "#9",
+        "#10",
+        "#11"
+       ],
+       "verified": false
+      },
+      {
+       "label": "MODE",
+       "type": "enum",
+       "options": [
+        "#0",
+        "#1"
+       ],
+       "verified": false
+      },
+      {
+       "label": "HARM"
+      },
+      {
+       "label": "MIX"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "DEL",
+   "label": "Delay",
+   "slot": 4,
+   "count_offset": 54,
+   "cc_base": 48,
+   "capacity": 6,
+   "color": "#1d8de0",
+   "models": [
+    {
+     "index": 0,
+     "name": "Analog Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "Digital Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "name": "Mod Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "MOD"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "name": "Tape Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "name": "Reverse Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "name": "Pan Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "name": "Physical Delay",
+     "user": null,
+     "params": [
+      {
+       "label": "TIME"
+      },
+      {
+       "label": "FEEDBACK"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "REV",
+   "label": "Reverb",
+   "slot": 5,
+   "count_offset": 61,
+   "cc_base": 54,
+   "capacity": 4,
+   "color": "#7a1fe6",
+   "models": [
+    {
+     "index": 0,
+     "name": "Room",
+     "user": null,
+     "params": [
+      {
+       "label": "DECAY"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "Hall",
+     "user": null,
+     "params": [
+      {
+       "label": "DECAY"
+      },
+      {
+       "label": "TONE"
+      },
+      {
+       "label": "PRE DELAY(ms)"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "name": "Plate",
+     "user": null,
+     "params": [
+      {
+       "label": "DECAY"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "name": "Spring",
+     "user": null,
+     "params": [
+      {
+       "label": "DECAY"
+      },
+      {
+       "label": "LEVEL"
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "name": "Shimmer",
+     "user": null,
+     "params": [
+      {
+       "label": "LEVEL"
+      },
+      {
+       "label": "DECAY"
+      },
+      {
+       "label": "SHIMMER"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "name": "Damp",
+     "user": null,
+     "params": [
+      {
+       "label": "LEVEL"
+      },
+      {
+       "label": "DEPTH"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "chain_default": [
+  6,
+  0,
+  1,
+  2,
+  7,
+  3,
+  4,
+  5
+ ],
+ "volume": {
+  "offset": 66,
+  "cc": 58
+ },
+ "name": {
+  "offset": 82,
+  "length": 16
+ },
+ "chain": {
+  "offset": 70,
+  "length": 8
+ }
+}

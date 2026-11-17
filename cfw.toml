@@ -1,0 +1,18 @@
+# Soran Dual Stomp Lite custom firmware build configuration.
+
+[base]
+# Stock firmware from soranaudio.com -> Download -> Device Firmware Updater 1.1.1 (Windows zip).
+file = "firmware/stock/JME-EN_V1.1.1_modified.bin"
+sha256 = "fda9d54bd168554bf69b2a7b5a02830dc69b0ac4993e7daababc5d7dfbdcd31a"
+version = "1.1.1"
+
+[build]
+version = "0.1.0"
+output = "build/soran-cfw-{version}-on-{base}.bin"
+# Patch files applied in order (see patches/README.md). The base build adds no behaviour
+# changes: every stock feature is kept, only the build-info tag is written into unused flash.
+patches = []
+
+[tag]
+# 256-byte "SCFW" build-info block at master+0x38000 (unused flash, never executed).
+enabled = true

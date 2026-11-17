@@ -1,0 +1,12 @@
+[base]
+file = "firmware/stock/JME-EN_V1.1.1_modified.bin"
+sha256 = "fda9d54bd168554bf69b2a7b5a02830dc69b0ac4993e7daababc5d7dfbdcd31a"
+version = "1.1.1"
+
+[build]
+version = "0.4.3-guard-diag"
+output = "build/soran-cfw-{version}-on-{base}.bin"
+patches = ["patches/fx-capture-guard/patch.toml"]
+
+[tag]
+enabled = true

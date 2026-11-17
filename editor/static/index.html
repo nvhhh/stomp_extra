@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stomp Editor</title>
+<style>
+:root{--bg:#10151c;--panel:#19212b;--panel2:#263241;--line:#3b495b;--text:#f2f5f9;--dim:#b9c5d3;--accent:#f2c230;--danger:#ff777e;--ok:#68d391;--radius:12px;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,"Segoe UI",Roboto,sans-serif;height:100vh;height:100dvh;display:flex;flex-direction:column}
+button,select,input{font:inherit;color:inherit}button{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;min-height:40px}
+button:hover:not(:disabled){background:#334359;border-color:#8296ae}button.primary{background:var(--accent);color:#171500;border-color:var(--accent)}button.primary:hover:not(:disabled){background:#ffda64;border-color:#ffda64}
+button:disabled{opacity:.5;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,[role=button]:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+header{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}header h1{font-size:19px;margin:0;font-weight:750;letter-spacing:.2px}
+.status{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:14px}.dot{width:10px;height:10px;border-radius:50%;background:var(--danger)}.dot.on{background:var(--ok)}.spacer{flex:1}.vol{display:flex;align-items:center;gap:10px}.vol input[type=range]{width:140px}.vol>span{white-space:nowrap}.vol output{min-width:2ch;font-variant-numeric:tabular-nums}
+main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}#presets{background:var(--panel);border-right:1px solid var(--line);overflow:auto}
+#presets .p{display:flex;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #2b3543;white-space:nowrap;overflow:hidden}#presets .p .t{overflow:hidden;text-overflow:ellipsis}#presets .p:hover{background:var(--panel2)}#presets .p.cur{background:#3b3215;color:#ffe08a;font-weight:650;box-shadow:inset 3px 0 var(--accent)}#presets .n{color:var(--dim);width:34px;flex:none;font-variant-numeric:tabular-nums}#presets .p.cur .n{color:#ffe08a}
+#content{display:flex;flex-direction:column;min-height:0;min-width:0;overflow:auto;padding:20px;gap:20px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}#pTitle{font-size:18px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:-6px 0 22px;flex-wrap:wrap}.tabs button{border:none;background:none;border-bottom:3px solid transparent;border-radius:0;padding:12px 14px;color:var(--dim)}.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+#chain{display:flex;align-items:center;gap:0;overflow-x:auto;padding:8px 3px}.blk{flex:none;min-width:110px;text-align:center;padding:11px 9px;border-radius:9px;border:2px solid transparent;cursor:pointer;background:#2a3442;color:var(--dim);user-select:none}.blk .k{font-weight:750;font-size:13px;letter-spacing:.5px}.blk .m{font-size:13px;max-width:135px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px}.blk.focus{border-color:#fff}.blk[draggable=true]{cursor:grab}.blk.dragover{outline:2px dashed var(--accent);outline-offset:2px}.wire{flex:none;width:20px;height:2px;background:#697b91}
+.editor{display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:24px}#models{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px}#models .mo{padding:10px 12px;cursor:pointer;border-bottom:1px solid #344051;display:flex;gap:10px;overflow-wrap:anywhere}#models .mo:hover{background:var(--panel2)}#models .mo.sel{background:#3b3215;color:#ffe08a;box-shadow:inset 3px 0 var(--accent);font-weight:600}#models .mo .i{color:var(--dim);min-width:24px;font-variant-numeric:tabular-nums}#models .mo.empty{color:var(--dim)}
+.param{display:grid;grid-template-columns:minmax(125px,175px) minmax(70px,1fr) 46px;align-items:center;gap:14px;margin:0;padding:13px 0;border-bottom:1px solid #303d4d}.param label{color:var(--text);font-size:14px;font-weight:600}.param output{text-align:right;color:#ffe08a;font-weight:650;font-variant-numeric:tabular-nums}input[type=range]{accent-color:var(--accent);width:100%;min-height:28px}.toggle{padding:6px 14px;border-radius:999px;font-weight:700}.toggle.on{background:var(--ok);color:#082b17;border-color:var(--ok)}
+.library-intro{margin-bottom:22px;max-width:780px}.library-intro h2{font-size:22px;margin:0 0 6px}.library-intro p{margin:6px 0;color:var(--dim)}.library-note{font-size:13px}.library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.library-group{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}.library-group header{padding:16px;gap:10px;background:#233044}.library-group h3{font-size:17px;margin:0}.library-group .group-count{margin-left:auto;color:var(--dim);font-size:13px}.bank-tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.3px;padding:3px 8px;border:1px solid #61758d;border-radius:5px;color:#dae6f5}.library-group.fx header{background:#20372f}.library-group.fx .bank-tag{color:#a4f1c4;border-color:#568b6b}
+.slots .s{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 16px;border-bottom:1px solid #3b495b;background:#1d2733}.slots .s:nth-child(even){background:#18212c}.slots .s:last-child{border-bottom:0}.slot-info{min-width:0}.slot-label{display:block;color:var(--dim);font-size:12px;letter-spacing:.65px;font-weight:700;margin-bottom:3px}.slot-name{display:block;font-size:16px;font-weight:650;overflow-wrap:anywhere;line-height:1.45}.slot-name.empty{color:#acbbcc;font-weight:400}.slots button{font-size:14px;white-space:nowrap}.library-group.single{max-width:900px}.slots.ir-list{border:1px solid var(--line);border-radius:10px;overflow:hidden;max-width:900px}
+.muted{color:var(--dim)}.small{font-size:13px}#task{position:fixed;z-index:5;left:50%;bottom:20px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:320px;max-width:90vw;display:none;box-shadow:0 12px 40px #0008}#task .bar{height:7px;background:#435168;border-radius:4px;margin-top:8px;overflow:hidden}#task .bar i{display:block;height:100%;background:var(--accent);width:0}#err{background:#461f26;border:1px solid var(--danger);color:#ffe3e5;border-radius:8px;padding:12px 16px;display:none}code{background:#101720;padding:2px 5px;border-radius:4px}
+.import-dialog{width:min(540px,calc(100vw - 32px));padding:26px;border:1px solid #61758d;border-radius:14px;background:#1b2634;color:var(--text);box-shadow:0 24px 80px #000a}.import-dialog::backdrop{background:#050a12bd}.import-dialog h2{margin:0 0 6px;font-size:23px}.import-dialog p{margin:8px 0 18px}.import-dialog .file-summary{padding:12px 14px;background:#111b27;border:1px solid var(--line);border-radius:8px;margin:18px 0;overflow-wrap:anywhere}.file-summary span{display:block;font-size:12px;color:var(--dim);margin-bottom:3px}.import-dialog label{display:block;font-weight:650;margin-bottom:8px}.name-row{display:flex;gap:8px}.name-row input{width:100%;min-width:0;padding:11px 12px;background:#111b27;border:1px solid #7a8da5;border-radius:8px}.name-row button{flex:none;font-size:13px}.field-help{display:flex;gap:12px;justify-content:space-between;color:var(--dim);font-size:13px;margin-top:8px}.field-help output{white-space:nowrap;font-variant-numeric:tabular-nums}.import-dialog .replace-note{margin:20px 0;padding:12px 14px;background:#302b1d;border-left:3px solid var(--accent);font-size:14px;color:#f4e3b2}.dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}.dialog-error{color:#ffb4ba;margin-top:12px}.import-dialog .name-adjustment{margin:8px 0 0;font-size:13px;color:#ffe08a}
+@media(max-width:1150px){.library-grid{grid-template-columns:1fr}.editor{grid-template-columns:250px minmax(0,1fr)}}
+@media(max-width:820px){main{grid-template-columns:1fr}#presets{max-height:155px;border-bottom:1px solid var(--line)}.editor{grid-template-columns:1fr}#content{padding:12px;gap:12px}.card{padding:16px}.vol{width:100%}.vol input{flex:1}header{padding:12px 16px}.param{grid-template-columns:120px minmax(60px,1fr) 36px;gap:10px}}
+@media(max-width:480px){.slots .s{padding:12px;gap:8px}.slots button{padding:8px;font-size:13px}.slot-name{font-size:15px}.library-group header{padding:12px}.library-group .group-count{width:100%;margin:0}.tabs button{padding:10px 8px;font-size:14px}.name-row{flex-wrap:wrap}.name-row button{min-height:34px}.param{grid-template-columns:1fr 42px}.param label{grid-column:1/-1}.import-dialog{padding:20px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Stomp Editor</h1>
+  <div class="status"><span class="dot" id="dot"></span><span id="status">Not connected</span></div>
+  <button id="btnConnect">Reconnect</button>
+  <div class="spacer"></div>
+  <div class="vol"><span class="muted">Preset volume</span><input type="range" id="vol" aria-label="Preset volume" min="0" max="100"><output id="volv"></output></div>
+</header>
+<main>
+  <nav id="presets" aria-label="Presets"></nav>
+  <section id="content">
+    <div id="err"></div>
+    <div class="card">
+      <div class="row">
+        <strong id="pTitle">–</strong><span id="dirty" class="muted small"></span>
+        <div class="spacer"></div>
+        <input id="pName" aria-label="Preset name" maxlength="16" placeholder="Preset name" style="width:170px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px">
+        <select id="pSlot" aria-label="Save to preset" title="Save to slot" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px"></select>
+        <button class="primary" id="btnSave">Save</button>
+        <button id="btnExport">Export</button>
+        <label><button id="btnImport" type="button">Import…</button><input type="file" id="fImport" accept=".jmePreset" hidden></label>
+      </div>
+      <div id="chain" style="margin-top:12px"></div>
+      <div class="row small" style="margin-top:8px">
+        <span class="muted">Drag blocks to reorder, or select a block and move it:</span>
+        <button id="chainLeft" title="Move selected effect earlier in the chain">← Left</button>
+        <button id="chainRight" title="Move selected effect later in the chain">Right →</button>
+        <button id="chainDefault">Default order</button>
+        <span id="chainStatus" class="muted" aria-live="polite">Changes are live. Save to keep them in this preset.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button data-tab="edit" class="on">Edit</button>
+        <button data-tab="nam">User Captures (NAM)</button>
+        <button data-tab="ir">User Cabs (IR)</button>
+        <button data-tab="device">Device</button>
+      </div>
+      <div id="tab-edit" class="editor">
+        <div><div class="row" style="margin-bottom:8px"><strong id="modName">–</strong><div class="spacer"></div><button class="toggle" id="btnBypass">OFF</button></div>
+          <div id="models"></div></div>
+        <div id="params"></div>
+      </div>
+      <div id="tab-nam" hidden>
+        <div class="library-intro"><h2>Capture library</h2><p>Choose a slot, select a <code>.nam</code> file, and give your capture a name before importing.</p><p class="library-note">Replacing a capture updates every preset that uses that slot.</p></div>
+        <div id="namSlots" class="library-grid"></div>
+      </div>
+      <div id="tab-ir" hidden><p class="muted small">Import a cab impulse response (<code>.wav</code>, any sample rate; the first 2048 samples at 48 kHz are used). It then appears in the Cab model list.</p><div class="slots ir-list" id="irSlots"></div></div>
+      <div id="tab-device" hidden><div id="device"></div></div>
+    </div>
+  </section>
+</main>
+<div id="task"><div id="taskLabel"></div><div class="bar"><i id="taskBar"></i></div></div>
+<input type="file" id="fSlot" hidden>
+<dialog id="namImport" class="import-dialog" aria-labelledby="namImportTitle" aria-describedby="namImportTarget">
+  <form id="namImportForm">
+    <h2 id="namImportTitle">Import NAM capture</h2>
+    <p id="namImportTarget" class="muted"></p>
+    <div class="file-summary"><span>Selected file</span><strong id="namFileName"></strong></div>
+    <label for="namImportName">Capture name</label>
+    <div class="name-row"><input id="namImportName" maxlength="32" required autocomplete="off" aria-describedby="namNameHelp namNameAdjustment"><button type="button" id="namUseFilename">Use filename</button></div>
+    <div class="field-help"><span id="namNameHelp">Up to 32 letters, numbers, spaces or punctuation.</span><output id="namNameCount" for="namImportName"></output></div>
+    <p id="namNameAdjustment" class="name-adjustment" hidden></p>
+    <div id="namReplaceNote" class="replace-note"></div>
+    <div id="namImportError" class="dialog-error" role="alert" hidden></div>
+    <div class="dialog-actions"><button type="button" id="namImportCancel">Cancel</button><button type="submit" class="primary" id="namImportSubmit">Import capture</button></div>
+  </form>
+</dialog>
+<script>
+const $ = s => document.querySelector(s);
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let CAT = null, S = null, version = -1, focusSlot = 1, slotUpload = null;
+let pendingNam = null, namSubmitting = false;
+let chainBusy = false, chainDrag = null;
+const defaultChain = [6,0,1,2,7,3,4,5];
+function movedChain(order,slot,target){
+  const next=order.slice(), from=next.indexOf(slot), to=next.indexOf(target);
+  if(from<0 || to<0) return next;
+  next.splice(from,1); next.splice(to,0,slot); return next;
+}
+async function changeChain(order){
+  if(chainBusy || !S?.connected || S.task) return;
+  chainBusy=true; render();
+  try {
+    const r=await fetch('/api/chain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order})});
+    const j=await r.json(); if(j.error) throw new Error(j.error);
+    const state=await fetch('/api/state').then(r=>r.json());
+    if(state.version>=version){S=state;version=state.version;}
+  } catch(e){S.error=e.message;}
+  finally {chainBusy=false;render();}
+}
+const hex2b = h => Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));
+const api = (p, body, raw) => fetch(p, {method: 'POST', body: raw ? body : JSON.stringify(body || {})})
+  .then(r => r.json()).then(j => { if (j.error) throw new Error(j.error); return j; })
+  .catch(e => showErr(e.message));
+function showErr(m){ const e=$('#err'); e.textContent=m; e.style.display=m?'block':'none'; }
+const moduleBySlot = s => CAT.modules.find(m => m.slot === s);
+const fxSlots = {7:[67,0],3:[68,5],4:[69,2]};
+function modelsFor(mod){
+  if (!S.fx_anywhere || !fxSlots[mod.slot]) return mod.models;
+  const models=mod.models.concat(moduleBySlot(0).models.map(m => ({...m,index:32+m.index,name:'OD/FX · '+m.name})));
+  if(S.capture_slots && [7,3].includes(mod.slot))
+    models.push(...Array.from({length:10},(_,i)=>({index:48+i,user:{kind:'nam',slot:i+(S.split_captures?10:0)},params:[{label:'GAIN'},{label:'LEVEL'}]})));
+  return models;
+}
+function selectedModel(rec,slot){
+  const v=rec[slot]&63, ext=fxSlots[slot];
+  if (S.fx_anywhere && ext && v===ext[1] && rec[ext[0]]>=0x50 && rec[ext[0]]<=0x5f)
+    return 32+rec[ext[0]]-0x50;
+  if (S.capture_slots && [7,3].includes(slot) && v===ext[1] && rec[ext[0]]>=0x60 && rec[ext[0]]<=0x69)
+    return 48+rec[ext[0]]-0x60;
+  return v;
+}
+
+function modelName(mod, m){
+  if (!m) return '?';
+  if (m.user) {
+    if (m.user.kind === 'nam') {
+      const name = captureName(m.user.slot), label = captureLabel(m.user.slot);
+      return name ? (name===label?label:`${label} · ${name}`) : `${label} (empty)`;
+    }
+    const e = S.ir[m.user.slot]; return e && e.used ? e.name : `IR ${m.user.slot+1} (empty)`;
+  }
+  return m.name;
+}
+
+function render(){
+  if (!S) return;
+  updateNamForm();
+  $('#dot').classList.toggle('on', S.connected);
+  $('#status').textContent = S.connected ? `${S.info?.model || ''} · firmware ${S.info?.firmware || ''}` : (S.error ? 'Not connected' : 'Connecting…');
+  showErr(S.error || '');
+  // presets
+  const nav = $('#presets');
+  if (nav.children.length !== 99) nav.innerHTML = Array.from({length:99},(_,i)=>`<div class="p" role="button" tabindex="0" data-i="${i}"><span class="n">P${String(i+1).padStart(2,'0')}</span><span class="t"></span></div>`).join('');
+  [...nav.children].forEach((el,i) => { el.querySelector('.t').textContent = S.presets[i] ?? '…'; el.classList.toggle('cur', i === S.current); });
+  const sel = $('#pSlot');
+  if (sel.options.length !== 99) sel.innerHTML = Array.from({length:99},(_,i)=>`<option value="${i}">P${String(i+1).padStart(2,'0')}</option>`).join('');
+  if (document.activeElement !== sel && S.current != null) sel.value = S.current;
+  // task
+  const t = S.task; $('#task').style.display = t ? 'block' : 'none';
+  if (t) { $('#taskLabel').textContent = `${t.label}${t.total>1?` (${t.done}/${t.total})`:''}…`; $('#taskBar').style.width = (t.total ? 100*t.done/t.total : 0)+'%'; }
+  if (!S.edit) return;
+  const rec = hex2b(S.edit);
+  const name = new TextDecoder().decode(rec.slice(82,98)).replace(/\0.*$/s,'');
+  $('#pTitle').textContent = S.current != null ? `P${String(S.current+1).padStart(2,'0')} · ${name}` : name;
+  $('#dirty').textContent = S.dirty ? '● edited (not saved)' : '';
+  if (document.activeElement !== $('#pName')) $('#pName').value = name;
+  if (document.activeElement !== $('#vol')) { $('#vol').value = rec[66]; } $('#volv').textContent = rec[66];
+  // chain
+  const order = Array.from(rec.slice(70,78));
+  $('#chain').innerHTML = order.map((slot,k) => {
+    const mod = moduleBySlot(slot); if (!mod) return '';
+    const v = rec[slot], on = !(v & 0x40), m = modelsFor(mod).find(x => x.index === selectedModel(rec,slot));
+    return (k? '<span class="wire"></span>':'') + `<div class="blk ${slot===focusSlot?'focus':''}" role="button" tabindex="0" data-slot="${slot}" draggable="${S.connected&&!S.task&&!chainBusy}" style="${on?`background:color-mix(in srgb,${mod.color} 52%,#101722);color:#fff`:''}" title="${on?'On':'Off'} – click to edit, drag to reorder">
+      <div class="k">${mod.label.toUpperCase()}</div><div class="m" title="${escapeHTML(modelName(mod,m))}">${escapeHTML(modelName(mod,m))}</div></div>`;
+  }).join('');
+  const pos=order.indexOf(focusSlot), locked=chainBusy||!S.connected||!!S.task;
+  $('#btnSave').disabled=chainBusy;
+  $('#chainLeft').disabled=locked||pos<=0;
+  $('#chainRight').disabled=locked||pos<0||pos>=7;
+  $('#chainDefault').disabled=locked||order.every((v,i)=>v===defaultChain[i]);
+  $('#chainStatus').textContent=chainBusy?'Applying chain order…':'Changes are live. Save to keep them in this preset.';
+  renderEditor(rec);
+  renderSlots();
+  renderDevice();
+}
+
+function renderEditor(rec){
+  const mod = moduleBySlot(focusSlot), v = rec[mod.slot], model = selectedModel(rec,mod.slot), on = !(v & 0x40);
+  $('#modName').textContent = mod.label;
+  const b = $('#btnBypass'); b.textContent = on ? 'ON' : 'OFF'; b.classList.toggle('on', on);
+  const list = $('#models'), key = mod.key + ':' + S.fx_anywhere + ':' + S.capture_slots + JSON.stringify(S.nam) + JSON.stringify(S.ir);
+  if (list.dataset.key !== key) {
+    list.dataset.key = key;
+    list.innerHTML = modelsFor(mod).map(m => {
+      const empty = m.user && m.user.kind === 'ir' && !(S.ir[m.user.slot]||{}).used;
+      return `<div class="mo ${empty?'empty':''}" role="button" tabindex="0" data-model="${m.index}"><span class="i">${m.index+1}</span><span>${escapeHTML(modelName(mod,m))}</span></div>`;
+    }).join('');
+  }
+  [...list.children].forEach(el => el.classList.toggle('sel', +el.dataset.model === model));
+  const m = modelsFor(mod).find(x => x.index === model);
+  const params = $('#params'), pkey = mod.key + ':' + model;
+  if (params.dataset.key !== pkey) {
+    params.dataset.key = pkey;
+    params.innerHTML = (m ? m.params : []).map((p,i) => {
+      const cc = mod.cc_base + i;
+      if (p.type === 'enum') return `<div class="param"><label>${p.label}${p.verified===false?' <span class="muted">(order unverified)</span>':''}</label>
+        <select aria-label="${escapeHTML(p.label)}" data-cc="${cc}" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px">${p.options.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select><output></output></div>`;
+      return `<div class="param"><label>${p.label}</label><input type="range" aria-label="${escapeHTML(p.label)}" min="0" max="100" data-cc="${cc}"><output></output></div>`;
+    }).join('') || '<p class="muted">No parameters.</p>';
+  }
+  params.querySelectorAll('[data-cc]').forEach(el => {
+    const val = rec[mod.count_offset + 1 + (+el.dataset.cc - mod.cc_base)];
+    if (document.activeElement !== el) el.value = val;
+    el.parentElement.querySelector('output').textContent = el.tagName === 'SELECT' ? '' : val;
+  });
+}
+
+function captureLabel(i){return `${i<10?'USER AMP':'FX'} ${String(i%10+1).padStart(2,'0')}`;}
+function captureName(i){
+  const name=String(S?.nam?.[i] ?? '').trim();
+  return name && /^[\x20-\x7e]+$/.test(name) && !/^-+$/.test(name) ? name : '';
+}
+function renderSlots(){
+  const row = (kind, i, name) => {
+    const label=kind==='nam'?captureLabel(i):`IR ${String(i+1).padStart(2,'0')}`;
+    const eyebrow=name===label && kind==='nam'?`${i<10?'AMP':'FX'} SLOT ${String(i%10+1).padStart(2,'0')}`:label;
+    return `<div class="s"><div class="slot-info"><span class="slot-label">${eyebrow}</span><span class="slot-name ${name?'':'empty'}">${escapeHTML(name || 'Empty slot')}</span></div>
+      <button data-up="${kind}" data-slot="${i}" aria-label="Import ${kind==='nam'?'NAM into':'cab into'} ${label}" ${S.connected&&!S.task?'':'disabled'}>Import ${kind==='nam'?'.nam':'.wav'}…</button></div>`;
+  };
+  const bank = (start,end,title,usage,fx=false) => {
+    const slots=Array.from({length:Math.max(0,end-start)},(_,n)=>start+n);
+    return `<section class="library-group ${fx?'fx':''}"><header><h3>${title}</h3><span class="bank-tag">${usage}</span><span class="group-count">${slots.length} slots</span></header><div class="slots">${slots.map(i=>row('nam',i,captureName(i))).join('')}</div></section>`;
+  };
+  const count=S.nam?.length || 10;
+  $('#namSlots').innerHTML = S.split_captures
+    ? bank(0,10,'Amplifier captures','AMP only')+bank(10,20,'Effect captures','EQ · MOD',true)
+    : bank(0,count,'User captures',S.capture_slots?'AMP · EQ · MOD':'AMP only');
+  $('#irSlots').innerHTML = S.ir.map((e,i) => row('ir',i,e?.used?e.name:'')).join('');
+}
+
+function defaultCaptureName(filename){
+  const base=filename.replace(/\.[^.]+$/, '').trim();
+  return base.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x20-\x7e]/g,'_').slice(0,32).trim() || 'Capture';
+}
+function updateNamForm(){
+  const field=$('#namImportName'), name=field.value.trim();
+  field.setCustomValidity(!name?'Enter a capture name.':name.length>32?'Keep the name to 32 characters or fewer.':! /^[\x20-\x7e]+$/.test(name)?'Use English letters, numbers, spaces or punctuation.':'');
+  $('#namNameCount').textContent=`${field.value.length} / 32`;
+  $('#namImportSubmit').disabled=namSubmitting || !pendingNam || !S?.connected || !!S?.task;
+  $('#namImportCancel').disabled=namSubmitting;
+  $('#namUseFilename').disabled=namSubmitting;
+  field.disabled=namSubmitting;
+}
+function useNamFilename(){
+  if(!pendingNam)return;
+  const original=pendingNam.file.name.replace(/\.[^.]+$/, '').trim();
+  const name=defaultCaptureName(pendingNam.file.name);
+  $('#namImportName').value=name;
+  $('#namNameAdjustment').hidden=name===original;
+  $('#namNameAdjustment').textContent=name===original?'':'The filename was shortened or adjusted to fit the pedal’s name format. You can edit it above.';
+  updateNamForm();
+}
+function openNamImport(file,slot){
+  pendingNam={file,slot};namSubmitting=false;
+  $('#namImportTarget').textContent=`${captureLabel(slot)} · ${S.split_captures?(slot<10?'AMP only':'EQ and MOD'):'User capture library'}`;
+  $('#namFileName').textContent=file.name;
+  const current=captureName(slot);
+  $('#namReplaceNote').textContent=current?`This replaces “${current}”. Every preset using this slot will use the new capture.`:'This capture will be available to presets using this slot.';
+  $('#namImportError').hidden=true;
+  useNamFilename();$('#namImport').showModal();$('#namImportName').focus();$('#namImportName').select();
+}
+
+function renderDevice(){
+  const i = S.info || {};
+  $('#device').innerHTML = `<p><strong>Model</strong> ${i.model||'–'} &nbsp; <strong>Firmware</strong> ${i.firmware||'–'} &nbsp; <strong>Build</strong> ${i.build||'–'}</p>
+   <p class="muted small">Global settings (read-only for now: the commands that change them have not been captured yet):</p>
+   <pre class="small" style="white-space:pre-wrap">${Object.entries(S.raw_state||{}).map(([k,v])=>`0x${k}: ${v}`).join('\n')}</pre>`;
+}
+
+// ---- interaction -------------------------------------------------------------------------
+let ccTimer = {};
+function sendCC(cc, value, focus){ clearTimeout(ccTimer[cc]); ccTimer[cc] = setTimeout(() => api('/api/cc', {cc, value:+value, focus}), 25); }
+$('#presets').addEventListener('click', e => { const p = e.target.closest('.p'); if (p) api('/api/select', {index:+p.dataset.i}); });
+$('#chain').addEventListener('click', e => { const b = e.target.closest('.blk'); if (b) { focusSlot = +b.dataset.slot; render(); } });
+$('#chain').addEventListener('dragstart', e => {
+  const b=e.target.closest('.blk'); if(!b||chainBusy){e.preventDefault();return;}
+  chainDrag=+b.dataset.slot;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(chainDrag));
+});
+$('#chain').addEventListener('dragover', e => {
+  const b=e.target.closest('.blk');if(b&&chainDrag!==null){e.preventDefault();e.dataTransfer.dropEffect='move';b.classList.add('dragover');}
+});
+$('#chain').addEventListener('dragleave', e => e.target.closest('.blk')?.classList.remove('dragover'));
+$('#chain').addEventListener('dragend', () => {chainDrag=null;document.querySelectorAll('.dragover').forEach(b=>b.classList.remove('dragover'));});
+$('#chain').addEventListener('drop', e => {
+  e.preventDefault();const b=e.target.closest('.blk');
+  if(!b||chainDrag===null)return;
+  const slot=chainDrag;chainDrag=null;focusSlot=slot;
+  changeChain(movedChain(Array.from(hex2b(S.edit).slice(70,78)),slot,+b.dataset.slot));
+});
+function stepChain(delta){
+  const order=Array.from(hex2b(S.edit).slice(70,78)), pos=order.indexOf(focusSlot);
+  if(pos+delta>=0&&pos+delta<8)changeChain(movedChain(order,focusSlot,order[pos+delta]));
+}
+$('#chainLeft').addEventListener('click',()=>stepChain(-1));
+$('#chainRight').addEventListener('click',()=>stepChain(1));
+$('#chainDefault').addEventListener('click',()=>changeChain(defaultChain));
+$('#models').addEventListener('click', e => {
+  const m = e.target.closest('.mo'); if (!m) return;
+  api('/api/model', {slot: focusSlot, model: +m.dataset.model});
+});
+$('#btnBypass').addEventListener('click', () => { const rec = hex2b(S.edit); api('/api/cc', {cc: focusSlot, value: rec[focusSlot] ^ 0x40, focus: focusSlot}); });
+$('#params').addEventListener('input', e => { const el = e.target; if (el.dataset.cc) { el.parentElement.querySelector('output').textContent = el.tagName==='SELECT'?'':el.value; sendCC(+el.dataset.cc, el.value); } });
+$('#vol').addEventListener('input', e => { $('#volv').textContent = e.target.value; sendCC(CAT.volume.cc, e.target.value); });
+$('#btnConnect').addEventListener('click', () => api('/api/connect'));
+$('#btnSave').addEventListener('click', () => {
+  const idx = +$('#pSlot').value, name = $('#pName').value.trim() || 'Preset';
+  if (idx !== S.current && !confirm(`Overwrite P${String(idx+1).padStart(2,'0')} "${S.presets[idx]}"?`)) return;
+  api('/api/save', {index: idx, name});
+});
+$('#btnExport').addEventListener('click', () => { if (S.current != null) location.href = `/api/export?index=${S.current}`; });
+$('#btnImport').addEventListener('click', () => $('#fImport').click());
+$('#fImport').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const idx = +$('#pSlot').value;
+  if (!confirm(`Import "${f.name}" into P${String(idx+1).padStart(2,'0')} (replaces "${S.presets[idx]}")?`)) return;
+  const r = await api(`/api/import?index=${idx}`, await f.arrayBuffer(), true); if (r && r.message !== 'imported') alert(r.message);
+});
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  ['edit','nam','ir','device'].forEach(t => $('#tab-'+t).hidden = t !== b.dataset.tab);
+}));
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-up]'); if (!b) return;
+  slotUpload = {kind: b.dataset.up, slot: +b.dataset.slot};
+  const f = $('#fSlot'); f.accept = slotUpload.kind === 'nam' ? '.nam' : '.wav'; f.click();
+});
+$('#fSlot').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f || !slotUpload) return;
+  const {kind, slot} = slotUpload; slotUpload=null;
+  if(kind==='nam'){openNamImport(f,slot);return;}
+  const name = f.name.replace(/\.[^.]+$/, '');
+  if (!confirm(`Upload "${f.name}" to ${kind==='nam'?captureLabel(slot):'IR '+(slot+1)}? The slot's current contents are replaced.`)) return;
+  api(`/api/${kind}?slot=${slot}&name=${encodeURIComponent(name)}`, await f.arrayBuffer(), true);
+});
+
+
+$('#namUseFilename').addEventListener('click',useNamFilename);
+$('#namImportName').addEventListener('input',()=>{$('#namNameAdjustment').hidden=true;updateNamForm();});
+$('#namImportCancel').addEventListener('click',()=>$('#namImport').close());
+$('#namImport').addEventListener('cancel',e=>{if(namSubmitting)e.preventDefault();});
+$('#namImport').addEventListener('close',()=>{pendingNam=null;updateNamForm();});
+$('#namImportForm').addEventListener('submit',async e=>{
+  e.preventDefault();updateNamForm();
+  if(namSubmitting || !pendingNam || !S?.connected || S.task || !e.target.reportValidity())return;
+  const {file,slot}=pendingNam, name=$('#namImportName').value.trim();
+  namSubmitting=true;updateNamForm();$('#namImportError').hidden=true;
+  try {
+    const response=await fetch(`/api/nam?slot=${slot}&name=${encodeURIComponent(name)}`,{method:'POST',body:await file.arrayBuffer()});
+    const result=await response.json();
+    if(!response.ok || result.error)throw new Error(result.error || 'The capture could not be imported.');
+    $('#namImport').close();
+  } catch(error){$('#namImportError').textContent=error.message;$('#namImportError').hidden=false;}
+  finally {namSubmitting=false;updateNamForm();}
+});
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ') && e.target.matches('.p,.mo,.blk')){e.preventDefault();e.target.click();}
+});
+
+async function poll(){
+  for (;;) {
+    try { S = await (await fetch(`/api/state?since=${version}`)).json(); version = S.version; render(); }
+    catch (e) { $('#status').textContent = 'Editor server not running'; await new Promise(r => setTimeout(r, 2000)); }
+  }
+}
+fetch('/api/catalog').then(r => r.json()).then(c => { CAT = c; poll(); });
+</script>
+</body>
+</html>
