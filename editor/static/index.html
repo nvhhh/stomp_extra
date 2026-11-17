@@ -105,6 +105,7 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
       <legend>Conversion</legend>
       <label class="radio"><input type="radio" name="convMethod" value="optimised"><span><strong>Accurate</strong><span id="convAccurateHelp" class="muted"></span></span></label>
       <label class="radio"><input type="radio" name="convMethod" value="app"><span><strong>Stomp Manager (original)</strong><span class="muted">Converts the same way as Stomp Manager.</span></span></label>
+      <p class="muted" style="font-size:12px;margin:6px 0 0">Conversion by <a href="https://github.com/JackMechem/open-stomp-lib" target="_blank" rel="noopener" style="color:var(--accent)">open-stomp</a> (MIT / Apache-2.0).</p>
     </fieldset>
     <div id="namReplaceNote" class="replace-note"></div>
     <div id="namImportError" class="dialog-error" role="alert" hidden></div>
@@ -324,7 +325,10 @@ function renderDevice(){
   const i = S.info || {};
   $('#device').innerHTML = `<p><strong>Model</strong> ${i.model||'–'} &nbsp; <strong>Firmware</strong> ${i.firmware||'–'} &nbsp; <strong>Build</strong> ${i.build||'–'}</p>
    <p class="muted small">Global settings (read-only for now: the commands that change them have not been captured yet):</p>
-   <pre class="small" style="white-space:pre-wrap">${Object.entries(S.raw_state||{}).map(([k,v])=>`0x${k}: ${v}`).join('\n')}</pre>`;
+   <pre class="small" style="white-space:pre-wrap">${Object.entries(S.raw_state||{}).map(([k,v])=>`0x${k}: ${v}`).join('\n')}</pre>
+   <h3 style="margin:20px 0 6px;font-size:15px">Credits</h3>
+   <p class="muted small">NAM and IR conversion uses <a href="https://github.com/JackMechem/open-stomp-lib" target="_blank" rel="noopener" style="color:var(--accent)">open-stomp</a>
+   © 2026 The open-stomp contributors, MIT / Apache-2.0.</p>`;
 }
 
 // ---- interaction -------------------------------------------------------------------------

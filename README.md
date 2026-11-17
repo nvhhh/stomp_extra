@@ -83,6 +83,13 @@ If browser policy blocks local access, use the local editor URL printed by the
 bridge. The bridge listens only on loopback and accepts the hosted origin only
 when started with `--pages`. The workflow deploys editor changes pushed to main.
 
+## Credits
+
+NAM and IR conversion uses [open-stomp](https://github.com/JackMechem/open-stomp-lib)
+(© 2026 The open-stomp contributors, MIT OR Apache-2.0). It also documented the pedal-side
+NAM/IR structure that the Accurate conversion relies on. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [`licenses/open-stomp/`](licenses/open-stomp/).
+
 ## CLI reference
 
 | | |
