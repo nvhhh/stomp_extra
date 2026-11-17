@@ -28,7 +28,13 @@ A_LITS = [0x239d0,0x245f0,0x26c54,0x27108,0x2b56c,0x2bfbc,0x2c1ac,0x2c954,
 B_LITS = [0x239d4,0x245f4,0x26c58,0x2710c,0x2b574,0x2bfc0,0x2c1b4,0x2c964,
           0x2cee0,0x2d244,0x2d3e4,0x2d724,0x2dd70,0x2e08c,0x2e214]
 
-def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=False, solid_fill=False, capture_guard=False, fast_fir=False, chain_fir=False, partition_fir=False):
+LONG_IR_RING = 0x81fb8000      # 1024 floats; MPU subregion 6 of region 10 made cacheable for it
+LONG_IR_LAST = 0x3e0c0         # halfword: active CAB index the ring was last used with
+CAB_OBJECT = 0x20004998        # stock CAB processor state (coefficients +0x128..+0x2128)
+
+
+def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=False, solid_fill=False, capture_guard=False, fast_fir=False, chain_fir=False, partition_fir=False, long_ir=False):
+    assert not long_ir or (chain_fir and cache_state)
     assert not partition_fir or chain_fir
     assert not chain_fir or fast_fir
     assert not fast_fir or capture_guard
@@ -362,17 +368,68 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
         import diagnostics as diag
         diagnostic_boot, extra_ops = diag.install(emit, installs, master, ram, whole_guard=partition_fir)
     if chain_fir:
+        cab_target = symbols["capture_fir8"] | 1
+        if long_ir:
+            # The CAB object holds all 2048 uploaded IR floats (reversed) at +0x128..+0x2128;
+            # stock plays the last 384 (+0x1b28) through a 512-sample ring at +0x2128.
+            # For user IR slots (active index 240..249) play the last 1024 (+0x1128) through a
+            # 1024-sample ring in cacheable SDRAM, cleared whenever the active IR changes.
+            # Built-in cabs and every other caller keep the 0.5.2 kernel unchanged.
+            assert master[0x14d0a:0x14d0e] == master[0x14e46:0x14e4a] == bytes.fromhex('41f6283e')  # movw lr, #0x1b28
+            assert not any(master[LONG_IR_LAST:LONG_IR_LAST + 4])
+            import capture_fir
+            long_fir = capture_fir.install(emit, ring=1024, name='cab_fir8_1024')   # 8-output VMLA, 1024/1024
+            cab_target = emit('cab_long_fir', f'''
+                push {{r4, r5, lr}}
+                ldr r4, ={CAB_OBJECT}
+                ldrh r4, [r4, #2]
+                subs r5, r4, #240
+                cmp r5, #10
+                bhs short_ir
+                ldr r5, ={LONG_IR_LAST}
+                ldrh.w r12, [r5]
+                cmp r12, r4
+                beq long_ready
+                strh r4, [r5]
+                push {{r0-r3}}
+                ldr r0, ={LONG_IR_RING}
+                movs r1, #0
+                mov.w r2, #0x400
+            clear_ring:
+                str r1, [r0], #4
+                subs r2, r2, #1
+                bne clear_ring
+                pop {{r0-r3}}
+            long_ready:
+                subw r2, r2, #0xa00
+                ldr r3, ={LONG_IR_RING}
+                mov.w r4, #0x400
+                str r4, [sp, #16]
+                str r4, [sp, #20]
+                pop {{r4, r5, lr}}
+                b.w {long_fir & ~1}
+            short_ir:
+                ldr r5, ={LONG_IR_LAST}
+                movw r4, #0xffff
+                strh r4, [r5]
+                pop {{r4, r5, lr}}
+                b.w {symbols["capture_fir8"]}
+            ''')
         for address in (0x14d22,0x14e5e,0x17c3a,0x17c84):
             expected,_=ks.asm('bl 0x13f84',address)
             assert master[address:address+4]==bytes(expected)
-            extra_ops.append(f'[[op]]\nkind="bl"\nslot="master"\noffset={address}\nexpect="{bytes(expected).hex()}"\ntarget={symbols["capture_fir8"]|1}')
+            target = cab_target if address in (0x14d22, 0x14e5e) else symbols["capture_fir8"] | 1
+            extra_ops.append(f'[[op]]\nkind="bl"\nslot="master"\noffset={address}\nexpect="{bytes(expected).hex()}"\ntarget={target}')
         import capture_metrics
         capture_metrics.install(emit,installs,ram)
     if cache_state:
         # Install the extra region while the stock startup has MPU and caches
         # disabled, before its existing barriers / full cache invalidation.
-        cached = emit('cache_extra_state', '''
-            push {r0-r3}
+        # Region 10: 128 KiB at 0x81fa0000, cacheable. SRD 0xc0 disables subregions 6-7 (the
+        # last 32 KiB); long_ir enables subregion 6 (0x81fb8000..0x81fbbfff) for its FIR ring.
+        rasr = 0x13038021 if long_ir else 0x1303c021
+        cached = emit('cache_extra_state', f'''
+            push {{r0-r3}}
             ldr r0, =0xe000ed90
             ldr r1, [r0]
             ubfx r1, r1, #8, #8
@@ -380,10 +437,10 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
             blo unchanged
             ldr r1, =0x81fa001a
             str r1, [r0, #12]
-            ldr r1, =0x1303c021
+            ldr r1, ={rasr:#x}
             str r1, [r0, #16]
         unchanged:
-            pop {r0-r3}
+            pop {{r0-r3}}
             dsb
             b.w 0xc3da
         ''')
@@ -399,6 +456,8 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
         blo clear
     '''
     boot_source += diagnostic_boot
+    if long_ir:
+        boot_source += f'ldr r0, ={LONG_IR_LAST}\nmovw r1, #0xffff\nstrh r1, [r0]\n'
     if split_bank:
         # Expand only the storage protocol. AMP's ten descriptors and wheel
         # limits are deliberately unchanged; FX uses physical slots 10..19.
@@ -425,7 +484,8 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
     ops.extend(partition_ops)
     assert master[0x3090e:0x30912].hex() == 'd6f7f5fe'
     ops.append(f'[[op]]\nkind="bl"\nslot="master"\noffset=0x3090e\nexpect="d6f7f5fe"\ntarget={boot}')
-    dest = (Path(__file__).parent.parent / 'fx-partition-fir' if partition_fir else
+    dest = (Path(__file__).parent.parent / 'fx-long-ir' if long_ir else
+            Path(__file__).parent.parent / 'fx-partition-fir' if partition_fir else
             Path(__file__).parent.parent / 'fx-chain-fir' if chain_fir else
             Path(__file__).parent.parent / 'fx-capture-fast' if fast_fir else
             Path(__file__).parent.parent / 'fx-capture-guard' if capture_guard else
@@ -448,4 +508,4 @@ if __name__ == '__main__':
           split_bank='--split-bank' in sys.argv, display_fix='--display-fix' in sys.argv,
           solid_fill='--solid-fill' in sys.argv, capture_guard='--capture-guard' in sys.argv,
           fast_fir='--fast-fir' in sys.argv, chain_fir='--chain-fir' in sys.argv,
-          partition_fir='--partition-fir' in sys.argv)
+          partition_fir='--partition-fir' in sys.argv, long_ir='--long-ir' in sys.argv)
