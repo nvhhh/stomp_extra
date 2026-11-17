@@ -14,15 +14,17 @@
     "capture_fir8": 230956,
     "capture_core": 225752,
     "capture_init_step": 224528,
+    "cab_load": 226704,
+    "cab_process": 227024,
     "fft": 225280,
-    "fft32": 226704,
+    "fft32": 227776,
     "filter8": 226032,
-    "partition_cmac": 227398,
+    "partition_cmac": 228470,
     "partition_core": 225752,
-    "partition_head8": 226976,
+    "partition_head8": 228048,
     "partition_init": 224528,
     "partition_pair_prepare": 225648,
-    "twiddle": 227488,
+    "twiddle": 228560,
     "capture_budget_guard": 231952,
     "slot7_model0": 232028,
     "slot7_model1": 232568,
@@ -51,11 +53,11 @@
     "diagnostic_end": 237668,
     "diagnostic_fault": 237800,
     "diagnostic_read": 237864,
-    "cab_fir8_1024": 238020,
-    "cab_long_fir": 238680,
-    "capture_metrics_read": 238784,
-    "cache_extra_state": 238904,
-    "boot": 238948
+    "cab_long_fir": 238020,
+    "cab_load_hook": 238048,
+    "capture_metrics_read": 238064,
+    "cache_extra_state": 238184,
+    "boot": 238228
   },
   "installs": [
     [
@@ -164,11 +166,11 @@
     ],
     [
       536941315,
-      238785
+      238065
     ],
     [
       536941319,
-      238785
+      238065
     ]
   ]
 }

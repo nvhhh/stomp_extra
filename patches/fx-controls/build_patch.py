@@ -28,8 +28,6 @@ A_LITS = [0x239d0,0x245f0,0x26c54,0x27108,0x2b56c,0x2bfbc,0x2c1ac,0x2c954,
 B_LITS = [0x239d4,0x245f4,0x26c58,0x2710c,0x2b574,0x2bfc0,0x2c1b4,0x2c964,
           0x2cee0,0x2d244,0x2d3e4,0x2d724,0x2dd70,0x2e08c,0x2e214]
 
-LONG_IR_RING = 0x81fb8000      # 1024 floats; MPU subregion 6 of region 10 made cacheable for it
-LONG_IR_LAST = 0x3e0c0         # halfword: active CAB index the ring was last used with
 CAB_OBJECT = 0x20004998        # stock CAB processor state (coefficients +0x128..+0x2128)
 
 
@@ -135,7 +133,8 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
     partition_ops = []
     if partition_fir:
         import partition_build
-        partition_blob, partition_symbols = partition_build.build(ROOT)
+        partition_blob, partition_symbols = partition_build.build(
+            ROOT, 'cab_partitioned.c' if long_ir else 'capture_partitioned.c')
         assert not any(master[0x36d10:0x36d10+len(partition_blob)]), 'partition code space occupied'
         capture_core = partition_symbols['partition_core'] | 1
         capture_init = partition_symbols['partition_init'] | 1
@@ -371,50 +370,34 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
         cab_target = symbols["capture_fir8"] | 1
         if long_ir:
             # The CAB object holds all 2048 uploaded IR floats (reversed) at +0x128..+0x2128;
-            # stock plays the last 384 (+0x1b28) through a 512-sample ring at +0x2128.
-            # For user IR slots (active index 240..249) play the last 1024 (+0x1128) through a
-            # 1024-sample ring in cacheable SDRAM, cleared whenever the active IR changes.
-            # Built-in cabs and every other caller keep the 0.5.2 kernel unchanged.
-            assert master[0x14d0a:0x14d0e] == master[0x14e46:0x14e4a] == bytes.fromhex('41f6283e')  # movw lr, #0x1b28
-            assert not any(master[LONG_IR_LAST:LONG_IR_LAST + 4])
-            import capture_fir
-            long_fir = capture_fir.install(emit, ring=1024, name='cab_fir8_1024')   # 8-output VMLA, 1024/1024
+            # stock plays the last 384 (+0x1b28). For user IR slots (active index 240..249) the
+            # FIR calls go to cab_process (cab_partitioned.c): 1024 taps, partitioned FFT,
+            # spectra prepared in the main loop by cab_load. It returns 0 when it does not
+            # handle the call (built-in cab, or spectra not ready) -> unchanged 0.5.2 kernel.
+            assert partition_fir, '--long-ir needs the partition kernel build'
+            loader_call, _ = ks.asm('bl 0x14fac', 0x15020)
+            assert master[0x15020:0x15024] == bytes(loader_call)   # only caller of the IR loader
             cab_target = emit('cab_long_fir', f'''
-                push {{r4, r5, lr}}
-                ldr r4, ={CAB_OBJECT}
-                ldrh r4, [r4, #2]
-                subs r5, r4, #240
-                cmp r5, #10
-                bhs short_ir
-                ldr r5, ={LONG_IR_LAST}
-                ldrh.w r12, [r5]
-                cmp r12, r4
-                beq long_ready
-                strh r4, [r5]
-                push {{r0-r3}}
-                ldr r0, ={LONG_IR_RING}
-                movs r1, #0
-                mov.w r2, #0x400
-            clear_ring:
-                str r1, [r0], #4
-                subs r2, r2, #1
-                bne clear_ring
-                pop {{r0-r3}}
-            long_ready:
-                subw r2, r2, #0xa00
-                ldr r3, ={LONG_IR_RING}
-                mov.w r4, #0x400
-                str r4, [sp, #16]
-                str r4, [sp, #20]
-                pop {{r4, r5, lr}}
-                b.w {long_fir & ~1}
-            short_ir:
-                ldr r5, ={LONG_IR_LAST}
-                movw r4, #0xffff
-                strh r4, [r5]
-                pop {{r4, r5, lr}}
+                push {{r0-r3, r4, lr}}
+                ldr r2, ={CAB_OBJECT}
+                ldrh r2, [r2, #2]
+                bl {symbols["cab_process"]}
+                cmp r0, #0
+                pop {{r0-r3, r4, lr}}
+                bne handled
                 b.w {symbols["capture_fir8"]}
+            handled:
+                bx lr
             ''')
+            load_hook = emit('cab_load_hook', f'''
+                push {{r4, lr}}
+                mov r4, r0
+                bl 0x14fac
+                mov r0, r4
+                bl {symbols["cab_load"]}
+                pop {{r4, pc}}
+            ''')
+            extra_ops.append(f'[[op]]\nkind="bl"\nslot="master"\noffset={0x15020}\nexpect="{bytes(loader_call).hex()}"\ntarget={load_hook}')
         for address in (0x14d22,0x14e5e,0x17c3a,0x17c84):
             expected,_=ks.asm('bl 0x13f84',address)
             assert master[address:address+4]==bytes(expected)
@@ -426,8 +409,8 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
         # Install the extra region while the stock startup has MPU and caches
         # disabled, before its existing barriers / full cache invalidation.
         # Region 10: 128 KiB at 0x81fa0000, cacheable. SRD 0xc0 disables subregions 6-7 (the
-        # last 32 KiB); long_ir enables subregion 6 (0x81fb8000..0x81fbbfff) for its FIR ring.
-        rasr = 0x13038021 if long_ir else 0x1303c021
+        # last 32 KiB); long_ir enables both (0x81fb8000..0x81fbffff) for the cab FFT state.
+        rasr = 0x13030021 if long_ir else 0x1303c021
         cached = emit('cache_extra_state', f'''
             push {{r0-r3}}
             ldr r0, =0xe000ed90
@@ -456,8 +439,6 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
         blo clear
     '''
     boot_source += diagnostic_boot
-    if long_ir:
-        boot_source += f'ldr r0, ={LONG_IR_LAST}\nmovw r1, #0xffff\nstrh r1, [r0]\n'
     if split_bank:
         # Expand only the storage protocol. AMP's ten descriptors and wheel
         # limits are deliberately unchanged; FX uses physical slots 10..19.

@@ -3258,260 +3258,31 @@ b.w      #0x8560
         bx lr
     
 
-/* cab_fir8_1024 @ 0x3a1c4 */
+/* cab_long_fir @ 0x3a1c4 */
 
-        ldr r12, [sp, #4]
-        cmp r12, #1024
-        bne fallback
-        ldr r12, [sp, #8]
-        cmp r12, #1024
-        bne fallback
-        ldr r12, [sp, #12]
-        cmp r12, #8
-        bne fallback
-        push {r4-r11,lr}
-        sub sp, #4
-        vpush {d8}
-        mov r4, r2
-        mov r5, r1
-        mov r7, r3
-        add r8, r7, #4096
-        ldr r6, [sp, #48]
-        ldr r11, [r6]
-        add r9, r7, r11, lsl #2
-    
-        vldr s0, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s1, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s2, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s3, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s4, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s5, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s6, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        vldr s7, [r9]
-        ldr r12, [r0], #4
-        str r12, [r9], #4
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        movs r12, #0
-vmov s8, r12
-vmov s9, r12
-vmov s10, r12
-vmov s11, r12
-vmov s12, r12
-vmov s13, r12
-vmov s14, r12
-vmov s15, r12
-ldr r10, [sp, #56]
-lsr r10, #3
-loop:
-vldmia r4!, {s16}
-vmla.f32 s8, s0, s16
-vmla.f32 s9, s1, s16
-vmla.f32 s10, s2, s16
-vmla.f32 s11, s3, s16
-vmla.f32 s12, s4, s16
-vmla.f32 s13, s5, s16
-vmla.f32 s14, s6, s16
-vmla.f32 s15, s7, s16
-
-        vldmia r9!, {s0}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s1, s16
-vmla.f32 s9, s2, s16
-vmla.f32 s10, s3, s16
-vmla.f32 s11, s4, s16
-vmla.f32 s12, s5, s16
-vmla.f32 s13, s6, s16
-vmla.f32 s14, s7, s16
-vmla.f32 s15, s0, s16
-
-        vldmia r9!, {s1}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s2, s16
-vmla.f32 s9, s3, s16
-vmla.f32 s10, s4, s16
-vmla.f32 s11, s5, s16
-vmla.f32 s12, s6, s16
-vmla.f32 s13, s7, s16
-vmla.f32 s14, s0, s16
-vmla.f32 s15, s1, s16
-
-        vldmia r9!, {s2}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s3, s16
-vmla.f32 s9, s4, s16
-vmla.f32 s10, s5, s16
-vmla.f32 s11, s6, s16
-vmla.f32 s12, s7, s16
-vmla.f32 s13, s0, s16
-vmla.f32 s14, s1, s16
-vmla.f32 s15, s2, s16
-
-        vldmia r9!, {s3}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s4, s16
-vmla.f32 s9, s5, s16
-vmla.f32 s10, s6, s16
-vmla.f32 s11, s7, s16
-vmla.f32 s12, s0, s16
-vmla.f32 s13, s1, s16
-vmla.f32 s14, s2, s16
-vmla.f32 s15, s3, s16
-
-        vldmia r9!, {s4}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s5, s16
-vmla.f32 s9, s6, s16
-vmla.f32 s10, s7, s16
-vmla.f32 s11, s0, s16
-vmla.f32 s12, s1, s16
-vmla.f32 s13, s2, s16
-vmla.f32 s14, s3, s16
-vmla.f32 s15, s4, s16
-
-        vldmia r9!, {s5}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s6, s16
-vmla.f32 s9, s7, s16
-vmla.f32 s10, s0, s16
-vmla.f32 s11, s1, s16
-vmla.f32 s12, s2, s16
-vmla.f32 s13, s3, s16
-vmla.f32 s14, s4, s16
-vmla.f32 s15, s5, s16
-
-        vldmia r9!, {s6}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        vldmia r4!, {s16}
-vmla.f32 s8, s7, s16
-vmla.f32 s9, s0, s16
-vmla.f32 s10, s1, s16
-vmla.f32 s11, s2, s16
-vmla.f32 s12, s3, s16
-vmla.f32 s13, s4, s16
-vmla.f32 s14, s5, s16
-vmla.f32 s15, s6, s16
-
-        vldmia r9!, {s7}
-        cmp r9, r8
-        it eq
-        moveq r9, r7
-        
-        subs r10, #1
-        bne loop
-        vstmia r5!, {s8-s15}
-        add r11, #8
-        ubfx r11, r11, #0, #10
-        str r11, [r6]
-        vpop {d8}
-        add sp, #4
-        pop {r4-r11,pc}
-    fallback:
-        b.w 0x13f84
-    
-
-/* cab_long_fir @ 0x3a458 */
-
-                push {r4, r5, lr}
-                ldr r4, =536889752
-                ldrh r4, [r4, #2]
-                subs r5, r4, #240
-                cmp r5, #10
-                bhs short_ir
-                ldr r5, =254144
-                ldrh.w r12, [r5]
-                cmp r12, r4
-                beq long_ready
-                strh r4, [r5]
-                push {r0-r3}
-                ldr r0, =2180743168
-                movs r1, #0
-                mov.w r2, #0x400
-            clear_ring:
-                str r1, [r0], #4
-                subs r2, r2, #1
-                bne clear_ring
-                pop {r0-r3}
-            long_ready:
-                subw r2, r2, #0xa00
-                ldr r3, =2180743168
-                mov.w r4, #0x400
-                str r4, [sp, #16]
-                str r4, [sp, #20]
-                pop {r4, r5, lr}
-                b.w 238020
-            short_ir:
-                ldr r5, =254144
-                movw r4, #0xffff
-                strh r4, [r5]
-                pop {r4, r5, lr}
+                push {r0-r3, r4, lr}
+                ldr r2, =536889752
+                ldrh r2, [r2, #2]
+                bl 227024
+                cmp r0, #0
+                pop {r0-r3, r4, lr}
+                bne handled
                 b.w 230956
+            handled:
+                bx lr
             
 
-/* capture_metrics_read @ 0x3a4c0 */
+/* cab_load_hook @ 0x3a1e0 */
+
+                push {r4, lr}
+                mov r4, r0
+                bl 0x14fac
+                mov r0, r4
+                bl 226704
+                pop {r4, pc}
+            
+
+/* capture_metrics_read @ 0x3a1f0 */
 
         mov r12, r2
         cmp r1, #8
@@ -3564,7 +3335,7 @@ vmla.f32 s15, s6, s16
         bx lr
     
 
-/* cache_extra_state @ 0x3a538 */
+/* cache_extra_state @ 0x3a268 */
 
             push {r0-r3}
             ldr r0, =0xe000ed90
@@ -3574,7 +3345,7 @@ vmla.f32 s15, s6, s16
             blo unchanged
             ldr r1, =0x81fa001a
             str r1, [r0, #12]
-            ldr r1, =0x13038021
+            ldr r1, =0x13030021
             str r1, [r0, #16]
         unchanged:
             pop {r0-r3}
@@ -3582,7 +3353,7 @@ vmla.f32 s15, s6, s16
             b.w 0xc3da
         
 
-/* boot @ 0x3a564 */
+/* boot @ 0x3a294 */
 push {r0-r4, lr}
         ldr r0, =0x3b000
         ldr r1, =0x3e080
@@ -3609,10 +3380,7 @@ push {r0-r4, lr}
         str r1, [r0]
         dsb
         isb
-    ldr r0, =254144
-movw r1, #0xffff
-strh r1, [r0]
-ldr r0, =0x20010ba5
+    ldr r0, =0x20010ba5
 movs r1, #20
 strb r1, [r0]
 ldr r0, =536919360
@@ -3694,10 +3462,10 @@ ldr r0, =536941310
 ldr r1, =237865
 str r1, [r0]
 ldr r0, =536941315
-ldr r1, =238785
+ldr r1, =238065
 str r1, [r0]
 ldr r0, =536941319
-ldr r1, =238785
+ldr r1, =238065
 str r1, [r0]
 pop {r0-r4, lr}
 b.w 0x76fc

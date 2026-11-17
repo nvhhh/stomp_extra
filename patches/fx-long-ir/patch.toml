@@ -48,7 +48,7 @@ kind="bytes"
 slot="master"
 offset=50134
 expect="bff34f8f"
-data="2ef0afb8"
+data="2df047bf"
 
 [[op]]
 kind="word"
@@ -312,16 +312,23 @@ value=237801
 [[op]]
 kind="bl"
 slot="master"
+offset=86048
+expect="fff7c4ff"
+target=238049
+
+[[op]]
+kind="bl"
+slot="master"
 offset=85282
 expect="fff72ff9"
-target=238681
+target=238021
 
 [[op]]
 kind="bl"
 slot="master"
 offset=85598
 expect="fff791f8"
-target=238681
+target=238021
 
 [[op]]
 kind="bl"
@@ -348,4 +355,4 @@ kind="bl"
 slot="master"
 offset=0x3090e
 expect="d6f7f5fe"
-target=238949
+target=238229

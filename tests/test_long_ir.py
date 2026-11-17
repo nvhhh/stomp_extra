@@ -1,4 +1,4 @@
-"""Long cab IRs (0.6.0-longir-test): run the built firmware's CAB FIR path in the emulator.
+"""Long cab IRs (0.6.0-longir-test, partitioned FFT): run the built firmware's CAB path in the emulator.
 
 User IR slots (active CAB index 240..249) must play the IR's first 1024 samples exactly;
 built-in cabs must stay bit-identical to 0.5.2; switching IRs must not leak ring history.
@@ -29,9 +29,9 @@ OLD = b.master('build/soran-cfw-0.5.2-deadline-on-1.1.1.bin')
 OLD_META = json.loads((ROOT / 'patches/fx-partition-fir/symbols.json').read_text())
 
 OBJ = 0x20004998            # stock CAB state
+LOAD = NEW_META['symbols']['cab_load']   # main-loop hook: prepares the FFT spectra
 COEFFS = OBJ + 0x128        # 2048 uploaded floats (reversed IR)
 RING_ARG, POS = OBJ + 0x2128, OBJ + 0x110
-LONG_RING = 0x81fb8000
 
 
 def setup(image, meta):
@@ -48,13 +48,17 @@ def ir_upload(path=None, seed=None):
     return struct.pack('<2048f', *[rng.uniform(-1, 1) * 0.999 ** k for k in range(2048)][::-1])
 
 
-def run(u, fn, index, upload, blocks, set_coeffs=True):
-    """Feed `blocks` (lists of 8 floats) through the CAB FIR call path; returns output samples."""
+def run(u, fn, index, upload, blocks, set_coeffs=True, load=None):
+    """Feed `blocks` (lists of 8 floats) through the CAB FIR call path; returns output samples.
+    set_coeffs: do what the main-loop IR loader does (copy, clear ring; with `load` = the
+    long-IR build's cab_load, also its hook that prepares the FFT spectra)."""
     u.mem_write(OBJ + 2, struct.pack('<H', index))
-    if set_coeffs:                     # what the firmware's IR loader does: copy, clear ring
+    if set_coeffs:
         u.mem_write(COEFFS, upload)
         u.mem_write(RING_ARG, bytes(0x800))
         u.mem_write(POS, bytes(4))
+        if load:
+            b.call(u, load, (index,))
     out = []
     for blk in blocks:
         u.mem_write(b.IN, struct.pack('<8f', *blk))
@@ -80,7 +84,7 @@ class LongIrTests(unittest.TestCase):
                               ('random IR', ir_upload(seed=2))):
             u = setup(NEW, NEW_META)
             x = np.random.default_rng(7).uniform(-0.5, 0.5, 8 * 400)   # 3200 samples: several ring wraps
-            y = run(u, NEW_META['symbols']['cab_long_fir'], 247, upload, blocks_of(x))
+            y = run(u, NEW_META['symbols']['cab_long_fir'], 247, upload, blocks_of(x), load=LOAD)
             ref = reference(upload, 1024, x)
             err = np.abs(y - ref).max() / np.abs(ref).max()
             self.assertLess(err, 1e-5, label)
@@ -93,7 +97,7 @@ class LongIrTests(unittest.TestCase):
         outs = []
         for image, meta, fn in ((OLD, OLD_META, OLD_META['symbols']['capture_fir8']),
                                 (NEW, NEW_META, NEW_META['symbols']['cab_long_fir'])):
-            outs.append(run(setup(image, meta), fn, 10 * 8 + 3, upload, blocks_of(x)))
+            outs.append(run(setup(image, meta), fn, 10 * 8 + 3, upload, blocks_of(x), load=meta['symbols'].get('cab_load')))
         self.assertTrue(np.array_equal(outs[0], outs[1]))
         # stock CAB runs 384 taps on a 512-sample ring: the oldest 384 entries -> 128 extra samples delay
         ref = np.concatenate([np.zeros(128), reference(upload, 384, x)])[:len(x)]
@@ -103,22 +107,41 @@ class LongIrTests(unittest.TestCase):
         u = setup(NEW, NEW_META)
         fn = NEW_META['symbols']['cab_long_fir']
         a, c = ir_upload(seed=4), ir_upload(seed=5)
-        run(u, fn, 241, a, blocks_of(np.ones(8 * 200)))                 # fill ring with IR A history
+        run(u, fn, 241, a, blocks_of(np.ones(8 * 200)), load=LOAD)      # fill history with IR A
         x = np.random.default_rng(3).uniform(-0.5, 0.5, 8 * 160)
-        y = run(u, fn, 242, c, blocks_of(x))                             # new active IR
+        y = run(u, fn, 242, c, blocks_of(x), load=LOAD)                  # new active IR
         ref = reference(c, 1024, x)                                      # zero history
         self.assertLess(np.abs(y - ref).max() / np.abs(ref).max(), 1e-5)
         # built-in in between, then back to a user IR: also starts from zero history
-        run(u, fn, 5, a, blocks_of(np.ones(8 * 50)))
-        y = run(u, fn, 242, c, blocks_of(x))
+        run(u, fn, 5, a, blocks_of(np.ones(8 * 50)), load=LOAD)
+        y = run(u, fn, 242, c, blocks_of(x), load=LOAD)
         self.assertLess(np.abs(y - ref).max() / np.abs(ref).max(), 1e-5)
+
+    def test_mpu_region_covers_cab_state(self):
+        """Region 10: FX state plus cab state (0x81FA0000..0x81FBFFFF) cacheable, nothing else."""
+        import test_fx_diagnostics as d
+        from unittest.mock import patch
+        with patch.object(d, 'IMAGE', NEW), patch.object(d, 'META', NEW_META):
+            u = d.make()
+        d.put(u, 0xe000ed90, 16 << 8)
+        b.call(u, 0xc3d6, (11, 22, 33, 44), stop=0xc3da)
+        rbar, rasr = b.word(u, 0xe000ed9c), b.word(u, 0xe000eda0)
+        self.assertEqual((rbar, rasr), (0x81fa001a, 0x13030021))
+        base, size = rbar & ~31, 1 << (((rasr >> 1) & 31) + 1)
+        enabled = [(base + i * size // 8, base + (i + 1) * size // 8)
+                   for i in range(8) if not rasr & (1 << (8 + i))]
+        self.assertEqual((enabled[0][0], enabled[-1][1]), (0x81fa0000, 0x81fc0000))
+        self.assertEqual(sum(hi - lo for lo, hi in enabled), 4 * 0x8000)
+        self.assertLess(0x81f9d900, enabled[0][0])      # static .bss stays uncached, as stock
+        self.assertEqual((rasr >> 16) & 63, 3)          # normal memory, write-back
+        self.assertEqual((rasr >> 28) & 1, 1)           # execute never
 
     def test_registers_preserved(self):
         u = setup(NEW, NEW_META)
         regs = (UC_ARM_REG_D8, UC_ARM_REG_D9, UC_ARM_REG_D10, UC_ARM_REG_D11, UC_ARM_REG_D12)
         for i, r in enumerate(regs):
             u.reg_write(r, 0x1234567800000000 + i)
-        run(u, NEW_META['symbols']['cab_long_fir'], 245, ir_upload(seed=6), blocks_of(np.ones(8)))
+        run(u, NEW_META['symbols']['cab_long_fir'], 245, ir_upload(seed=6), blocks_of(np.ones(8 * 4)), load=LOAD)
         self.assertEqual([u.reg_read(r) for r in regs], [0x1234567800000000 + i for i in range(5)])
 
     def test_full_cab_processor_load_sequence(self):
@@ -155,22 +178,25 @@ class LongIrTests(unittest.TestCase):
         self.assertNotEqual(old, new)                                    # longer IR actually plays
 
     def test_instruction_profile(self):
-        counts = {}
+        """Per-callback instructions over 8 consecutive callbacks (all 4 FFT phases, twice)."""
+        rows = {}
         for label, image, meta, fn, index in (
-                ('0.5.2 user IR (384 taps)', OLD, OLD_META, OLD_META['symbols']['capture_fir8'], 247),
-                ('long-IR user IR (1024 taps)', NEW, NEW_META, NEW_META['symbols']['cab_long_fir'], 247),
+                ('0.5.2 any cab (384 taps)', OLD, OLD_META, OLD_META['symbols']['capture_fir8'], 247),
+                ('long-IR user IR (1024 taps, FFT)', NEW, NEW_META, NEW_META['symbols']['cab_long_fir'], 247),
                 ('long-IR built-in cab', NEW, NEW_META, NEW_META['symbols']['cab_long_fir'], 83)):
             u = setup(image, meta)
             n, on = [0], [False]
             u.hook_add(UC_HOOK_CODE, lambda *a: on[0] and n.__setitem__(0, n[0] + 1))
-            run(u, fn, index, ir_upload(seed=8), blocks_of(np.ones(8 * 4)))   # warm up (ring clear done)
-            on[0] = True
-            run(u, fn, index, ir_upload(seed=8), blocks_of(np.ones(8)), set_coeffs=False)
-            counts[label] = n[0]
-        for k, v in counts.items():
-            print(f'     {k}: {v} instructions per 8-sample callback')
-        self.assertLess(counts['long-IR built-in cab'] - counts['0.5.2 user IR (384 taps)'], 40)
-
+            run(u, fn, index, ir_upload(seed=8), blocks_of(np.ones(8 * 300)), load=meta['symbols'].get('cab_load'))
+            per = []
+            for _ in range(8):
+                n[0] = 0; on[0] = True
+                run(u, fn, index, ir_upload(seed=8), blocks_of(np.ones(8)), set_coeffs=False)
+                on[0] = False; per.append(n[0])
+            rows[label] = per
+        for k, v in rows.items():
+            print(f'     {k}: max {max(v)}, mean {sum(v)/len(v):.0f} instructions per callback  {v}')
+        self.assertLess(max(rows['long-IR built-in cab']) - max(rows['0.5.2 any cab (384 taps)']), 40)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

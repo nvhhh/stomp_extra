@@ -2,8 +2,8 @@
 from pathlib import Path
 import json, math, subprocess
 
-def build(root):
-    source=Path(__file__).with_name('capture_partitioned.c')
+def build(root, source_name='capture_partitioned.c'):
+    source=Path(__file__).with_name(source_name)
     out=root/'work/partition-kernel';out.mkdir(exist_ok=True)
     llvm=Path('C:/Program Files/LLVM/bin')
     vals=[v for k in range(32) for v in (math.cos(2*math.pi*k/64),-math.sin(2*math.pi*k/64))]
@@ -65,7 +65,7 @@ bx lr
     subprocess.run([str(llvm/'clang.exe'),'--target=arm-none-eabi','-mcpu=cortex-m7','-mthumb',
         '-mfpu=fpv4-sp-d16','-mfloat-abi=hard','-O2','-fno-unroll-loops','-ffreestanding','-fno-builtin',
         '-fno-unwind-tables','-fno-asynchronous-unwind-tables','-ffp-contract=off',
-        '-I',str(out),'-c',str(source),'-o',str(out/'kernel.o')],check=True)
+        '-I',str(out),'-I',str(source.parent),'-c',str(source),'-o',str(out/'kernel.o')],check=True)
     subprocess.run([str(llvm/'clang.exe'),'--target=arm-none-eabi','-mcpu=cortex-m7','-mthumb',
         '-c',str(out/'head.S'),'-o',str(out/'head.o')],check=True)
     subprocess.run([str(llvm/'ld.lld.exe'),'-T',str(script),str(out/'kernel.o'),str(out/'head.o'),'-o',str(out/'kernel.elf')],check=True)
