@@ -252,7 +252,7 @@ class App:
                 self.bump(task=None, error=f"{label} failed: {e}")
         threading.Thread(target=run, daemon=True).start()
 
-    def upload_ir(self, slot: int, name: str, wav: bytes, method: str = "optimised"):
+    def upload_ir(self, slot: int, name: str, wav: bytes, method: str = "app"):
         coeffs = irconv.wav_to_coeffs(wav, method)
         p = self.need()
 
@@ -374,7 +374,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path in ("/api/ir", "/api/nam", "/api/import"):
                 body = self._body()
                 if u.path == "/api/ir":
-                    APP.upload_ir(int(q["slot"]), q.get("name", "IR"), body, q.get("method", "optimised"))
+                    APP.upload_ir(int(q["slot"]), q.get("name", "IR"), body, q.get("method", "app"))
                     return self._json({"ok": True})
                 if u.path == "/api/nam":
                     APP.upload_nam(int(q["slot"]), q.get("name", "NAM"), body, q.get("method", "optimised"))

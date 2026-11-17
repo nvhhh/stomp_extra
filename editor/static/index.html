@@ -104,7 +104,7 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
     <fieldset class="conv-choice">
       <legend>Conversion</legend>
       <label class="radio"><input type="radio" name="convMethod" value="optimised"><span><strong>Accurate</strong><span id="convAccurateHelp" class="muted"></span></span></label>
-      <label class="radio"><input type="radio" name="convMethod" value="app"><span><strong>Stomp Manager (original)</strong><span class="muted">Converts the same way as Stomp Manager.</span></span></label>
+      <label class="radio"><input type="radio" name="convMethod" value="app"><span><strong>Stomp Manager (original)</strong><span id="convOriginalHelp" class="muted">Converts the same way as Stomp Manager.</span></span></label>
       <p class="muted" style="font-size:12px;margin:6px 0 0">Conversion by <a href="https://github.com/JackMechem/open-stomp-lib" target="_blank" rel="noopener" style="color:var(--accent)">open-stomp</a> (MIT / Apache-2.0).</p>
     </fieldset>
     <div id="namReplaceNote" class="replace-note"></div>
@@ -278,9 +278,14 @@ function defaultCaptureName(filename){
   const base=filename.replace(/\.[^.]+$/, '').trim();
   return base.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x20-\x7e]/g,'_').slice(0,nameLimit()).trim() || (pendingNam?.kind==='ir'?'IR':'Capture');
 }
-// Conversion method for this import; the last choice is remembered per browser.
-function convMethod(){ return document.querySelector('input[name="convMethod"]:checked')?.value || 'optimised'; }
-function savedConvMethod(){ try { return localStorage.getItem('convMethod') || 'optimised'; } catch { return 'optimised'; } }
+// Conversion method for this import; the last choice is remembered per browser, separately for NAM and IR.
+// IRs default to the original conversion: 0.6.0+ plays the IR's first 1024 samples, Accurate only fills 384.
+const CONV_DEFAULT={nam:'optimised',ir:'app'};
+function convMethod(){ return document.querySelector('input[name="convMethod"]:checked')?.value || CONV_DEFAULT[pendingNam?.kind||'nam']; }
+function savedConvMethod(kind){
+  try { return localStorage.getItem('convMethod.'+kind) || (kind==='nam' && localStorage.getItem('convMethod')) || CONV_DEFAULT[kind]; }
+  catch { return CONV_DEFAULT[kind]; }
+}
 function updateNamForm(){
   const field=$('#namImportName'), name=field.value.trim();
   const limit=nameLimit();
@@ -311,9 +316,12 @@ function openNamImport(file,slot,kind='nam'){
   $('#namNameHelp').textContent=`Up to ${limit} letters, numbers, spaces or punctuation.`;
   $('#namImportSubmit').textContent=ir?'Import IR':'Import capture';
   $('#convAccurateHelp').textContent=ir
-    ?'The pedal plays only the first 8 ms of an IR. Fits those 8 ms to the whole IR.'
+    ?'Fits 8 ms (384 samples) to the whole IR. Only for stock or 0.5.2 firmware, which play just 8 ms.'
     :'Fits the pedal’s filters to the whole model. Closest to the original; takes about a minute.';
-  const saved=savedConvMethod();
+  $('#convOriginalHelp').textContent=ir
+    ?'Uploads the IR’s real start, as Stomp Manager does. Best on 0.6.0, which plays 21 ms (1024 samples).'
+    :'Converts the same way as Stomp Manager.';
+  const saved=savedConvMethod(kind);
   document.querySelectorAll('input[name="convMethod"]').forEach(r=>r.checked=r.value===saved);
   $('#namFileName').textContent=file.name;
   const current=ir?(S.ir[slot]?.used?S.ir[slot].name:''):captureName(slot);
@@ -417,7 +425,7 @@ $('#namImportForm').addEventListener('submit',async e=>{
   e.preventDefault();updateNamForm();
   if(namSubmitting || !pendingNam || !S?.connected || S.task || !e.target.reportValidity())return;
   const {file,slot,kind}=pendingNam, name=$('#namImportName').value.trim(), method=convMethod();
-  try { localStorage.setItem('convMethod', method); } catch {}
+  try { localStorage.setItem('convMethod.'+kind, method); } catch {}
   namSubmitting=true;updateNamForm();$('#namImportError').hidden=true;
   try {
     const response=await apiFetch(`/api/${kind}?slot=${slot}&name=${encodeURIComponent(name)}&method=${method}`,{method:'POST',body:await file.arrayBuffer()});

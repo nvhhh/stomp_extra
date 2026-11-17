@@ -66,8 +66,8 @@ It's a local editor that talks to the pedal over USB MIDI:
 Protocol details are in `docs/PROTOCOL.md`. `tests/test_jme_capture.py` checks the implementation
 against recorded Stomp Manager traffic.
 
-**NAM / IR conversion.** Choose the conversion in the import dialog (the choice is
-remembered). **Accurate** uses the [open-stomp](https://github.com/JackMechem/open-stomp-lib)
+**NAM / IR conversion.** Choose the conversion in the import dialog. NAM defaults to
+Accurate and IRs to Stomp Manager (original); the last choice for each is remembered. **Accurate** uses the [open-stomp](https://github.com/JackMechem/open-stomp-lib)
 converter (MIT / Apache-2.0, installed by `requirements.txt` on Windows). The pedal does not run NAM
 directly: a user amp is two 512-tap filters around a fixed saturation, and on stock/0.5.2 an IR slot
 plays only 384 taps (8 ms). Accurate fits those to the whole model or IR instead of taking the start
@@ -77,7 +77,7 @@ of the file. On ten Marshall cab IRs it cut the error of what a 384-tap slot pla
 upload; NAM within 0.015 %, using the official excitation read from Stomp Manager's converter DLL,
 set `SORAN_NAM_DLL` if it isn't found). Without open-stomp, imports fall back to the old path.
 
-**On 0.6.0, import IRs with Stomp Manager (original).** It uploads the IR's real first 2048
+**On 0.6.0, import IRs with Stomp Manager (original)**, the default. It uploads the IR's real first 2048
 samples, of which 0.6.0 plays 1024. Accurate squeezes the IR into 384 taps, so it gains nothing there.
 For NAM, Accurate stays the better choice on every firmware.
 Close Stomp Manager while using the editor.
