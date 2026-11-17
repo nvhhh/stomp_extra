@@ -1,8 +1,8 @@
 """Cab IR (.wav) -> the 2048-tap float32 block the pedal expects.
 
 Verified against Stomp Manager's upload: coefficients = gain * reverse(ir[0:2048]) at 48 kHz.
-Stomp Manager's exact gain rule is not known; matching its output L2 level (0.65372 for the
-captured IR, error < 1e-8 on that file) keeps imported IRs at the same loudness as its imports.
+Conversion uses open-stomp when installed (see wav_to_coeffs). The fallback approximates Stomp
+Manager's gain by matching its output L2 level (0.65372 for the captured IR, error < 1e-7).
 """
 from __future__ import annotations
 
@@ -61,7 +61,34 @@ def resample(x: np.ndarray, src: int, dst: int = RATE) -> np.ndarray:
     return np.interp(np.arange(n) * (src / dst), np.arange(len(x)), x)
 
 
-def wav_to_coeffs(data: bytes) -> bytes:
+METHODS = ("optimised", "app")
+
+
+def wav_to_coeffs(data: bytes, method: str = "optimised") -> bytes:
+    """WAV bytes -> 8192-byte IR upload.
+
+    The pedal plays only the first 384 taps (8 ms) of an IR slot.
+    method "optimised": open-stomp's converter (github.com/JackMechem/open-stomp-lib, MIT/Apache-2.0)
+        fits a 384-tap minimum-phase filter to the whole IR (30 Hz-16 kHz). On the cab IRs tested here
+        it cut the error of what the pedal plays from ~3.0 to ~1.4 dB rms.
+    method "app": Stomp Manager's conversion (open-stomp's exact reimplementation, within 3e-8 of a
+        captured upload). Without open-stomp installed, both use the local approximation below.
+    """
+    if method not in METHODS:
+        raise ValueError(f"unknown IR conversion method {method!r}")
+    read_wav(data)  # validate early with a clear error
+    try:
+        import open_stomp as o
+    except ImportError:
+        o = None
+    if o is not None:
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "ir.wav"
+            f.write_bytes(data)
+            r = o.ir.convert(str(f), method=method)
+        return np.asarray(r.data, dtype="<f4").tobytes()
     x, rate = read_wav(data)
     x = resample(x, rate)[:TAPS]
     x = np.pad(x, (0, TAPS - len(x)))

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import struct
 import subprocess
 import sys
 import tempfile
@@ -46,7 +47,39 @@ def find_dll(dll: str | None = None) -> Path | None:
     return None
 
 
-def convert(nam_bytes: bytes, dll: str | None = None) -> tuple[bytes, float]:
+METHODS = ("optimised", "app")
+
+
+def convert(nam_bytes: bytes, dll: str | None = None, method: str = "optimised") -> tuple[bytes, float]:
+    """-> (8192-byte upload, slot factor).
+
+    method "optimised": open-stomp's converter (github.com/JackMechem/open-stomp-lib, MIT/Apache-2.0).
+        It fits the pedal's two 512-tap filters + fixed saturation to the model with a simulation of
+        the pedal (about a minute). Much closer to the model than the official conversion.
+    method "app": Stomp Manager's conversion. Uses open-stomp's reimplementation with the official
+        excitation read from Stomp Manager's DLL (matches its upload within 0.015 %), or else the DLL.
+    Without open-stomp installed, both fall back to the DLL.
+    """
+    if method not in METHODS:
+        raise ValueError(f"unknown NAM conversion method {method!r}")
+    try:
+        import open_stomp as o
+    except ImportError:
+        o = None
+    if o is not None:
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "model.nam"
+            f.write_bytes(nam_bytes)
+            if method == "optimised":
+                r = o.nam.convert(str(f), measure="optimised")
+            else:
+                dll_path = find_dll(dll)
+                if dll_path is None:
+                    raise FileNotFoundError("exact Stomp Manager conversion needs its converter DLL "
+                                            "(run Stomp Manager once, or set SORAN_NAM_DLL)")
+                r = o.nam.convert(str(f), excitation=o.nam.official_excitation(str(dll_path)), measure="app")
+        blob = struct.pack("<2048f", *r.data)
+        return blob, float(r.factor)
     path = find_dll(dll)
     if not path:
         raise FileNotFoundError("NAM converter DLL not found (run Stomp Manager once, or set SORAN_NAM_DLL)")

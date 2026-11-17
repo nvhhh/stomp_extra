@@ -252,8 +252,8 @@ class App:
                 self.bump(task=None, error=f"{label} failed: {e}")
         threading.Thread(target=run, daemon=True).start()
 
-    def upload_ir(self, slot: int, name: str, wav: bytes):
-        coeffs = irconv.wav_to_coeffs(wav)
+    def upload_ir(self, slot: int, name: str, wav: bytes, method: str = "optimised"):
+        coeffs = irconv.wav_to_coeffs(wav, method)
         p = self.need()
 
         def run(prog):
@@ -263,7 +263,9 @@ class App:
             self.bump()
         self._task(f"Uploading IR to slot {slot + 1}", run)
 
-    def upload_nam(self, slot: int, name: str, nam: bytes):
+    def upload_nam(self, slot: int, name: str, nam: bytes, method: str = "optimised"):
+        if method not in namconv.METHODS:
+            raise ValueError(f"unknown conversion method {method!r}")
         p = self.need()
         split = self.s.get('split_captures', False)
         if not 0 <= slot < (20 if split else 10):
@@ -271,8 +273,9 @@ class App:
         fx_slot = slot - (10 if split else 0)
 
         def run(prog):
-            prog(0, 1)
-            blob, gain = namconv.convert(nam)
+            self.bump(task={"label": "Converting NAM" + (" (accurate fit, about a minute)" if method == "optimised" else ""),
+                            "done": 0, "total": 1})
+            blob, gain = namconv.convert(nam, method=method)
             p.upload_nam(slot, blob, name, gain, prog)
             if self.s.get('capture_slots', False):
                 with self._model_lock:
@@ -371,10 +374,10 @@ class Handler(BaseHTTPRequestHandler):
             if u.path in ("/api/ir", "/api/nam", "/api/import"):
                 body = self._body()
                 if u.path == "/api/ir":
-                    APP.upload_ir(int(q["slot"]), q.get("name", "IR"), body)
+                    APP.upload_ir(int(q["slot"]), q.get("name", "IR"), body, q.get("method", "optimised"))
                     return self._json({"ok": True})
                 if u.path == "/api/nam":
-                    APP.upload_nam(int(q["slot"]), q.get("name", "NAM"), body)
+                    APP.upload_nam(int(q["slot"]), q.get("name", "NAM"), body, q.get("method", "optimised"))
                     return self._json({"ok": True})
                 return self._json({"ok": True, "message": APP.import_preset(int(q["index"]), body)})
             a = json.loads(self._body() or b"{}")

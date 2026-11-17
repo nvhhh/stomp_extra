@@ -51,8 +51,18 @@ It's a local editor that talks to the pedal over USB MIDI:
 - import NAM captures into the 10 user‑amp slots, and cab IRs (.wav) into the 10 IR slots
 
 Protocol details are in `docs/PROTOCOL.md`. `tests/test_jme_capture.py` checks the implementation
-against recorded Stomp Manager traffic. NAM import uses the converter DLL that ships inside Stomp
-Manager (set `SORAN_NAM_DLL` if it isn't found automatically).
+against recorded Stomp Manager traffic.
+
+**NAM / IR conversion.** Imports default to **Accurate**, which uses the
+[open-stomp](https://github.com/JackMechem/open-stomp-lib) converter (MIT / Apache-2.0,
+installed by `requirements.txt` on Windows). The pedal does not run NAM or long IRs: a user amp is
+two 512-tap filters around a fixed saturation, and an IR slot plays only 384 taps (8 ms).
+Accurate fits those to the whole model or IR instead of taking the start of the file.
+On ten Marshall cab IRs it cut the error of what the pedal plays from 3.25 to 1.54 dB rms
+(`tests/test_conversion.py`); NAM fitting takes about a minute per model.
+**Exact Stomp Manager** reproduces the official conversion (IR within 1e-7 of a captured
+upload; NAM within 0.015 %, using the official excitation read from Stomp Manager's converter DLL,
+set `SORAN_NAM_DLL` if it isn't found). Without open-stomp, imports fall back to the old path.
 Close Stomp Manager while using the editor.
 
 ## GitHub Pages editor

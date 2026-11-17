@@ -2,3 +2,4 @@ hidapi>=0.14
 capstone>=5
 python-rtmidi>=1.5
 numpy>=1.26
+open_stomp @ https://github.com/JackMechem/open-stomp-lib/releases/download/v0.6.1/open_stomp-0.6.1-cp39-abi3-win_amd64.whl ; sys_platform == 'win32'

@@ -82,10 +82,13 @@ main{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:0}
         <div id="params"></div>
       </div>
       <div id="tab-nam" hidden>
-        <div class="library-intro"><h2>Capture library</h2><p>Choose a slot, select a <code>.nam</code> file, and give your capture a name before importing.</p><p class="library-note">Replacing a capture updates every preset that uses that slot.</p></div>
+        <div class="library-intro"><h2>Capture library</h2><p>Choose a slot, select a <code>.nam</code> file, and give your capture a name before importing.</p><p class="library-note">Replacing a capture updates every preset that uses that slot.</p>
+          <label class="small">Conversion <select class="conv-method" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px"><option value="optimised">Accurate (open-stomp fit, about a minute)</option><option value="app">Exact Stomp Manager</option></select></label></div>
         <div id="namSlots" class="library-grid"></div>
       </div>
-      <div id="tab-ir" hidden><p class="muted small">Import a cab impulse response (<code>.wav</code>, any sample rate; the first 2048 samples at 48 kHz are used). It then appears in the Cab model list.</p><div class="slots ir-list" id="irSlots"></div></div>
+      <div id="tab-ir" hidden><p class="muted small">Import a cab impulse response (<code>.wav</code>, any sample rate). The pedal plays only 8 ms (384 taps) of an IR; Accurate fits those taps to the whole IR, Exact Stomp Manager uses the start of the file. It then appears in the Cab model list.</p>
+        <label class="small">Conversion <select class="conv-method" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px"><option value="optimised">Accurate (open-stomp fit)</option><option value="app">Exact Stomp Manager</option></select></label>
+        <div class="slots ir-list" id="irSlots"></div></div>
       <div id="tab-device" hidden><div id="device"></div></div>
     </div>
   </section>
@@ -375,8 +378,20 @@ $('#fSlot').addEventListener('change', async e => {
   if(kind==='nam'){openNamImport(f,slot);return;}
   const name = f.name.replace(/\.[^.]+$/, '');
   if (!confirm(`Upload "${f.name}" to ${kind==='nam'?captureLabel(slot):'IR '+(slot+1)}? The slot's current contents are replaced.`)) return;
-  api(`/api/${kind}?slot=${slot}&name=${encodeURIComponent(name)}`, await f.arrayBuffer(), true);
+  api(`/api/${kind}?slot=${slot}&name=${encodeURIComponent(name)}&method=${convMethod()}`, await f.arrayBuffer(), true);
 });
+// Conversion method for NAM / IR imports, shared by both tabs and remembered per browser.
+function convMethod(){ return document.querySelector('.conv-method')?.value || 'optimised'; }
+(() => {
+  let saved = 'optimised'; try { saved = localStorage.getItem('convMethod') || saved; } catch {}
+  document.querySelectorAll('.conv-method').forEach(s => {
+    s.value = saved;
+    s.addEventListener('change', () => {
+      document.querySelectorAll('.conv-method').forEach(o => o.value = s.value);
+      try { localStorage.setItem('convMethod', s.value); } catch {}
+    });
+  });
+})();
 
 
 $('#namUseFilename').addEventListener('click',useNamFilename);
@@ -390,7 +405,7 @@ $('#namImportForm').addEventListener('submit',async e=>{
   const {file,slot}=pendingNam, name=$('#namImportName').value.trim();
   namSubmitting=true;updateNamForm();$('#namImportError').hidden=true;
   try {
-    const response=await apiFetch(`/api/nam?slot=${slot}&name=${encodeURIComponent(name)}`,{method:'POST',body:await file.arrayBuffer()});
+    const response=await apiFetch(`/api/nam?slot=${slot}&name=${encodeURIComponent(name)}&method=${convMethod()}`,{method:'POST',body:await file.arrayBuffer()});
     const result=await response.json();
     if(!response.ok || result.error)throw new Error(result.error || 'The capture could not be imported.');
     $('#namImport').close();
