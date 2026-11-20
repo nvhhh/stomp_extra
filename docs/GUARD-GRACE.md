@@ -49,6 +49,21 @@ native OD keys untouched; per-channel guard. Plus 0.6.0's capture and long-IR su
 0.6.0 guard tests and MPU test) against this image. 0.5.2 and 0.6.0 patches regenerate
 byte-identically. Container selftest passed.
 
+## Hardware result (2026-11-20)
+
+Flashed `232e09aa…0e287` (29,937 records, 96 s), normal boot. Captures restored from
+`backups/library-1795150702716770900.zip` without touching the live edit. Setup: NAM USER AMP 06,
+user IR "Marshall Box - 9" (1024-tap path), MOD = capture FX01, chain Gate → OD → EQ → MOD → AMP
+→ DEL → REV → CAB. Log: `work/grace-0.6.2-mod-activation.jsonl`.
+
+- MOD capture switched on 8 times (override off 0.5 s, on, polled for 3 s): **8/8 stayed active**
+  (stage 0 → 1 in ~50 ms, no trip). Peak during activations 100,682 cycles: the start-up overrun
+  is real and small (<1%), and the grace window absorbed it.
+- Then 30 s steady: 120 samples, median 81,052, max sampled 94,705 cycles, stage 1 throughout,
+  0 unfinished passes. Peak since boot 102,336 (single overruns, never two in a row).
+- Capture cost in the steady state: starts ~12.7k cycles into the block, ends ~31.2k (~18.5k).
+- Not tested: EQ + MOD captures together (that combination hung the pedal on 0.6.0).
+
 ## Build
 
 ```
