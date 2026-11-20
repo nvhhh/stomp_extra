@@ -31,7 +31,8 @@ B_LITS = [0x239d4,0x245f4,0x26c58,0x2710c,0x2b574,0x2bfc0,0x2c1b4,0x2c964,
 CAB_OBJECT = 0x20004998        # stock CAB processor state (coefficients +0x128..+0x2128)
 
 
-def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=False, solid_fill=False, capture_guard=False, fast_fir=False, chain_fir=False, partition_fir=False, long_ir=False):
+def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=False, solid_fill=False, capture_guard=False, fast_fir=False, chain_fir=False, partition_fir=False, long_ir=False, guard_grace=False):
+    assert not guard_grace or (partition_fir and capture_guard)
     assert not long_ir or (chain_fir and cache_state)
     assert not partition_fir or chain_fir
     assert not chain_fir or fast_fir
@@ -143,6 +144,16 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
         symbols['capture_init_step'] = capture_init & ~1
         partition_ops.append('[[op]]\nkind="blob"\nslot="master"\noffset=0x36d10\nfile="partition.bin"')
     budget_guard = 0
+    import diagnostics as diag
+    # --guard-grace: during a capture's start-up grace (meta +8, counted by the whole-callback
+    # guard), the per-channel check only latches at or above diag.GRACE_HARD.
+    grace_check = f'''
+            ldr r2, [r0, #8]
+            cbz r2, latch
+            ldr r2, ={diag.GRACE_HARD}
+            cmp r3, r2
+            blo safe
+        latch:''' if guard_grace else ''
     if capture_guard:
         # Partitioned builds use the fixed stock-clock deadline, not the last
         # (potentially shortened or stretched) interval between ISR entries.
@@ -166,7 +177,7 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
             movw r12, #5000
             sub r2, r2, r12
             cmp r3, r2
-            blo safe
+            blo safe{grace_check}
             str r1, [r0, #28]
             movs r2, #3
             str r2, [r0, #4]
@@ -364,8 +375,7 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
     diagnostic_boot = ''
     extra_ops = []
     if diagnostics:
-        import diagnostics as diag
-        diagnostic_boot, extra_ops = diag.install(emit, installs, master, ram, whole_guard=partition_fir)
+        diagnostic_boot, extra_ops = diag.install(emit, installs, master, ram, whole_guard=partition_fir, grace=guard_grace)
     if chain_fir:
         cab_target = symbols["capture_fir8"] | 1
         if long_ir:
@@ -465,7 +475,8 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
     ops.extend(partition_ops)
     assert master[0x3090e:0x30912].hex() == 'd6f7f5fe'
     ops.append(f'[[op]]\nkind="bl"\nslot="master"\noffset=0x3090e\nexpect="d6f7f5fe"\ntarget={boot}')
-    dest = (Path(__file__).parent.parent / 'fx-long-ir' if long_ir else
+    dest = (Path(__file__).parent.parent / 'fx-guard-grace' if guard_grace else
+            Path(__file__).parent.parent / 'fx-long-ir' if long_ir else
             Path(__file__).parent.parent / 'fx-partition-fir' if partition_fir else
             Path(__file__).parent.parent / 'fx-chain-fir' if chain_fir else
             Path(__file__).parent.parent / 'fx-capture-fast' if fast_fir else
@@ -489,4 +500,5 @@ if __name__ == '__main__':
           split_bank='--split-bank' in sys.argv, display_fix='--display-fix' in sys.argv,
           solid_fill='--solid-fill' in sys.argv, capture_guard='--capture-guard' in sys.argv,
           fast_fir='--fast-fir' in sys.argv, chain_fir='--chain-fir' in sys.argv,
-          partition_fir='--partition-fir' in sys.argv, long_ir='--long-ir' in sys.argv)
+          partition_fir='--partition-fir' in sys.argv, long_ir='--long-ir' in sys.argv,
+          guard_grace='--guard-grace' in sys.argv)

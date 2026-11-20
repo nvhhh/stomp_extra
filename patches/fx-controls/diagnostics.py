@@ -6,7 +6,46 @@ Fault records require a debugger if the CPU faults and USB stops responding.
 BASE = 0x3e100
 FAULT = 0x3e180
 
-def install(emit, installs, master, ram, whole_guard=False):
+GRACE_CALLBACKS = 3000      # ~0.5 s of audio callbacks after a capture starts processing
+GRACE_HARD = 115000         # during grace, a callback at or above this still counts as normal
+GRACE_STREAK = 16           # during grace, this many consecutive overruns still latch
+
+
+def grace_tick():
+    """Per callback, before the overrun test: load each capture's grace counter (meta +8) while
+    it initializes (stage 0), count it down while it processes (stage 1), and set the shared
+    in-grace flag at BASE+32 when any processing capture is still inside its window."""
+    return f'''
+        ldr r3, =0x3e020
+        movs r2, #0
+        str r2, [r4, #32]
+        movs r2, #2
+    grace_loop:
+        ldr r1, [r3]
+        cmp r1, #17
+        blo grace_next
+        ldr r1, [r3, #4]
+        cbnz r1, grace_active
+        ldr r1, ={GRACE_CALLBACKS}
+        str r1, [r3, #8]
+        b grace_next
+    grace_active:
+        cmp r1, #1
+        bne grace_next
+        ldr r1, [r3, #8]
+        cbz r1, grace_next
+        subs r1, #1
+        str r1, [r3, #8]
+        movs r1, #1
+        str r1, [r4, #32]
+    grace_next:
+        add r3, #32
+        subs r2, #1
+        bne grace_loop
+    '''
+
+
+def install(emit, installs, master, ram, whole_guard=False, grace=False):
     command = 0x20010cbc + 0x485 + 0x31*9
     assert ram[command-0x20000000:command-0x20000000+9] == bytes(9)
     assert master[BASE:FAULT+64] == bytes(FAULT+64-BASE)
@@ -83,6 +122,30 @@ def install(emit, installs, master, ram, whole_guard=False):
         str r1, [r4, #28]
     guard_done:
     ''' if whole_guard else ''
+    if grace:
+        # Start-up grace: a capture's first callbacks after initialization can exceed the
+        # 100,000-cycle block briefly (cold state). For GRACE_CALLBACKS after it starts
+        # processing, overruns below GRACE_HARD latch only after GRACE_STREAK in a row.
+        assert whole_guard
+        old_limit = '''
+        cmp r1, #2
+        blo guard_done
+        ldr r3, =0x3e020'''
+        assert whole_check.count(old_limit) == 1
+        whole_check = grace_tick() + whole_check.replace(old_limit, f'''
+        ldr r2, [r4, #32]
+        cbz r2, normal_limit
+        ldr r2, ={GRACE_HARD}
+        cmp r0, r2
+        bhs normal_limit
+        cmp r1, #{GRACE_STREAK}
+        blo guard_done
+        b latch_start
+    normal_limit:
+        cmp r1, #2
+        blo guard_done
+    latch_start:
+        ldr r3, =0x3e020''')
     end = emit('diagnostic_end', f'''
         push {{r0-r4,lr}}
         ldr r4, ={BASE}
