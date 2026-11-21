@@ -3,7 +3,7 @@
 Custom firmware (CFW) for the **Soran Dual Stomp Lite** on stock firmware V1.1.1, plus a browser
 editor. The CFW is the stock firmware with every feature kept; it only adds to it.
 
-**Latest release: [0.6.0 — 1024-tap user cab IRs](https://github.com/nvhhh/stomp_extra/releases/latest)**
+**Latest release: [0.6.3 — preset-switch freeze fix](https://github.com/nvhhh/stomp_extra/releases/latest)**
 · **Editor: https://nvhhh.github.io/stomp_extra/**
 
 ## What you get
@@ -15,11 +15,17 @@ editor. The CFW is the stock firmware with every feature kept; it only adds to i
 - **OD/FX models in more slots**, selectable on the pedal.
 - **Faster capture processing**, so AMP + EQ + MOD captures can run together, with overload
   protection: if the DSP runs out of time, captures switch to dry instead of crashing.
+  Next to a NAM amp there is room for one EQ or MOD capture; a second one switches to dry.
 - **Editor in the browser, nothing to install:** every preset and parameter, drag-and-drop effect
   order, NAM and IR import, `.jmePreset` import/export.
 
 Built-in amps, cabs, effects, looper, drums, USB audio and Bluetooth are the vendor's own code,
 unchanged.
+
+**New in 0.6.3:** switching to a preset with an EQ/MOD capture no longer freezes the pedal. The
+capture stays dry for about 0.1 s while the screen redraws, then continues. A capture you switch on
+also no longer drops out right after it starts. ([details](docs/PRESET-SETTLE.md),
+[start-up grace](docs/GUARD-GRACE.md))
 
 ## Flashing
 
@@ -83,12 +89,13 @@ included in this repository.
 
 ```sh
 # put the stock JME-EN_V1.1.1_modified.bin in firmware/stock/ (from the Soran updater zip)
-.venv/Scripts/python cfw.py build -c cfw-long-ir-test.toml     # current release config
-.venv/Scripts/python cfw.py selftest -c cfw-long-ir-test.toml  # format, patch and simulated DFU checks
+.venv/Scripts/python cfw.py build -c cfw-settle.toml     # current release config (0.6.3)
+.venv/Scripts/python cfw.py selftest -c cfw-settle.toml  # format, patch and simulated DFU checks
 ```
 
 `cfw.py` also has `info`, `diff`, `unpack`/`pack`, `devices`/`query` and `flash`. Docs:
 [flash map, file format and DFU protocol](docs/FORMAT.md), [USB MIDI protocol](docs/PROTOCOL.md),
 [long IRs](docs/LONG-IR.md), [captures](docs/PARTITIONED-CAPTURE.md),
+[capture guard start-up grace](docs/GUARD-GRACE.md), [preset-switch freeze fix](docs/PRESET-SETTLE.md),
 [patches](patches/README.md). Emulator tests are in `tests/`. The browser converter
 (`editor/static/stomp_convert.wasm`) is rebuilt with `python tools/build_converter_wasm.py` (needs Rust).
