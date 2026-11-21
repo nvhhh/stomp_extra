@@ -67,7 +67,7 @@ def install(emit, master, root, bank_offset=0, fast_fir=False, scheduled=False, 
     return core, init
 
 
-def wrapper(core, init, a, b, meta, bank_offset=0, budget_guard=0, partition_fir=False, pair_prepare=0):
+def wrapper(core, init, a, b, meta, bank_offset=0, budget_guard=0, partition_fir=False, pair_prepare=0, settle=0):
     right = b + (0x30 if partition_fir else 0x3100)
     def check(channel):
         return f'''ldr r0, ={meta}
@@ -76,6 +76,12 @@ def wrapper(core, init, a, b, meta, bank_offset=0, budget_guard=0, partition_fir
         cmp r0, #0
         bne preparing
         ''' if budget_guard else ''
+    # Preset settle (0.6.3): dry, without initializing or processing, while the hold word is set.
+    settle_check = f'''
+        ldr r0, ={settle}
+        ldr r0, [r0]
+        cmp r0, #0
+        bne preparing''' if settle else ''
     # Enter with the same saved arguments/48-byte frame as the OD wrapper.
     return f'''
     capture:
@@ -95,7 +101,7 @@ def wrapper(core, init, a, b, meta, bank_offset=0, budget_guard=0, partition_fir
         movs r0, #0
         str r0, [r6, #4]
         str r0, [r6, #16]
-    capture_ready:
+    capture_ready:{settle_check}
         ldr r0, [r6, #4]
         {'cmp r0, #3; beq preparing' if budget_guard else ''}
         cmp r0, #2

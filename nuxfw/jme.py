@@ -239,6 +239,31 @@ class Pedal:
         names=('key','stage','before_cycles','after_cycles','trip_checkpoint')
         return {slot:dict(zip(names,values[i*5:i*5+5])) for i,slot in enumerate(('eq','mod'))}
 
+    def profiler(self, pages: int = 50, header: int = 32) -> dict:
+        """Read the stall profiler (command 0x33, read-only). 0.6.3: pages=50, header=32;
+        0.6.3-diag: pages=49, header=16."""
+        words = []
+        with self._io:
+            for page in range(pages):
+                r = self.request(sysex(0x33, 0, bytes([page])), self._is(0x33, 2), timeout=0.5, retries=1)
+                payload = r[7:-1]
+                if len(payload) != 84 or payload[:4] != b'PRF1' or any(v > 127 for v in payload):
+                    raise ValueError('invalid profiler reply')
+                words += [sum(v << (7*i) for i, v in enumerate(payload[p:p+5])) & 0xffffffff
+                          for p in range(4, 84, 5)]
+        names = ('heartbeat', 'heartbeat_seen', 'stall_callbacks', 'stall_samples', 'longest_stall',
+                 'longest_samples', 'stalls', 'gap_since_sample', 'longest_start_pass',
+                 'current_start_pass', 'last_stall', 'longest_gap', 'settle_left', 'settle_quiet',
+                 'settle_redraw_seen', 'recalls', 'debt', 'max_debt', 'debt_latches',
+                 'settles_by_quiet', 'settles_by_limit')
+        out = dict(zip(names, words[:header]))
+        def samples(first, count):
+            return [dict(pc=words[k], lr=words[k+1], exc_return=words[k+2], gap=words[k+3])
+                    for k in range(first, first + 4*count, 4)]
+        out['current'] = samples(header, out['stall_samples'])
+        out['longest'] = samples(header + 4*96, out['longest_samples'])
+        return out
+
     def set_fx_override(self, slot: int, model: int | None):
         maximum = 26 if slot in (7, 3) and getattr(self, 'fx_version', 0) >= 2 else 16
         if slot not in FX_SLOTS or (model is not None and not 0 <= model < maximum):

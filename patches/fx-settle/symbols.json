@@ -1,0 +1,187 @@
+{
+  "symbols": {
+    "initialize_step": 229664,
+    "selection": 229820,
+    "wheel_native": 229872,
+    "wheel": 229884,
+    "parameter_count": 230104,
+    "parameter_edit": 230160,
+    "fx_bank_names": 230304,
+    "capture_parameter_layout": 230624,
+    "display_route": 230636,
+    "capture_labels": 230792,
+    "display_capture_name": 230888,
+    "capture_fir8": 230956,
+    "capture_core": 225752,
+    "capture_init_step": 224528,
+    "cab_load": 226704,
+    "cab_process": 227024,
+    "fft": 225280,
+    "fft32": 227776,
+    "filter8": 226032,
+    "partition_cmac": 228470,
+    "partition_core": 225752,
+    "partition_head8": 228048,
+    "partition_init": 224528,
+    "partition_pair_prepare": 225648,
+    "twiddle": 228560,
+    "capture_budget_guard": 231952,
+    "slot7_model0": 232044,
+    "slot7_model1": 232596,
+    "slot3_model0": 232796,
+    "slot3_model1": 232996,
+    "slot3_model2": 233196,
+    "slot3_model3": 233396,
+    "slot3_model4": 233596,
+    "slot3_model5": 233796,
+    "slot3_model6": 234348,
+    "slot3_model7": 234548,
+    "slot3_model8": 234748,
+    "slot3_model9": 234948,
+    "slot3_model10": 235148,
+    "slot3_model11": 235348,
+    "slot3_model12": 235548,
+    "slot4_model0": 235748,
+    "slot4_model1": 235948,
+    "slot4_model2": 236148,
+    "slot4_model3": 236700,
+    "slot4_model4": 236900,
+    "slot4_model5": 237100,
+    "slot4_model6": 237300,
+    "command": 237500,
+    "diagnostic_begin": 237664,
+    "diagnostic_end": 238004,
+    "diagnostic_fault": 238268,
+    "diagnostic_read": 238332,
+    "profile_heartbeat": 238488,
+    "profile_read": 238508,
+    "settle_recall": 238612,
+    "cab_long_fir": 238652,
+    "cab_load_hook": 238680,
+    "capture_metrics_read": 238696,
+    "cache_extra_state": 238816,
+    "boot": 238860
+  },
+  "installs": [
+    [
+      536919360,
+      232045
+    ],
+    [
+      536919364,
+      232597
+    ],
+    [
+      536919676,
+      232797
+    ],
+    [
+      536919680,
+      232997
+    ],
+    [
+      536919684,
+      233197
+    ],
+    [
+      536919688,
+      233397
+    ],
+    [
+      536919692,
+      233597
+    ],
+    [
+      536919696,
+      233797
+    ],
+    [
+      536919700,
+      234349
+    ],
+    [
+      536919704,
+      234549
+    ],
+    [
+      536919708,
+      234749
+    ],
+    [
+      536919712,
+      234949
+    ],
+    [
+      536919716,
+      235149
+    ],
+    [
+      536919720,
+      235349
+    ],
+    [
+      536919724,
+      235549
+    ],
+    [
+      536918896,
+      235749
+    ],
+    [
+      536918900,
+      235949
+    ],
+    [
+      536918904,
+      236149
+    ],
+    [
+      536918908,
+      236701
+    ],
+    [
+      536918912,
+      236901
+    ],
+    [
+      536918916,
+      237101
+    ],
+    [
+      536918920,
+      237301
+    ],
+    [
+      536941297,
+      237501
+    ],
+    [
+      536941301,
+      237501
+    ],
+    [
+      536941306,
+      238333
+    ],
+    [
+      536941310,
+      238333
+    ],
+    [
+      536941324,
+      238509
+    ],
+    [
+      536941328,
+      238509
+    ],
+    [
+      536941315,
+      238697
+    ],
+    [
+      536941319,
+      238697
+    ]
+  ]
+}

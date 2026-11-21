@@ -31,8 +31,10 @@ B_LITS = [0x239d4,0x245f4,0x26c58,0x2710c,0x2b574,0x2bfc0,0x2c1b4,0x2c964,
 CAB_OBJECT = 0x20004998        # stock CAB processor state (coefficients +0x128..+0x2128)
 
 
-def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=False, solid_fill=False, capture_guard=False, fast_fir=False, chain_fir=False, partition_fir=False, long_ir=False, guard_grace=False):
+def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=False, solid_fill=False, capture_guard=False, fast_fir=False, chain_fir=False, partition_fir=False, long_ir=False, guard_grace=False, stall_profiler=False, preset_settle=False):
     assert not guard_grace or (partition_fir and capture_guard)
+    assert not stall_profiler or guard_grace
+    assert not preset_settle or stall_profiler
     assert not long_ir or (chain_fir and cache_state)
     assert not partition_fir or chain_fir
     assert not chain_fir or fast_fir
@@ -289,7 +291,7 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
                 pop {{r4-r7, lr}}
                 ldr r12, ={original}
                 bx r12
-                {capture.wrapper(capture_core, capture_init, a, b, meta, 10 if split_bank else 0, budget_guard, partition_fir, symbols.get('partition_pair_prepare',0)) if model == carrier else ''}
+                {capture.wrapper(capture_core, capture_init, a, b, meta, 10 if split_bank else 0, budget_guard, partition_fir, symbols.get('partition_pair_prepare',0), diag.SETTLE if preset_settle else 0) if model == carrier else ''}
             ''')
             installs.append((table + 4*model, fn))
     # ABI: r0=complete SysEx, r1=length, r2=reply transport. No persistent writes.
@@ -375,7 +377,7 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
     diagnostic_boot = ''
     extra_ops = []
     if diagnostics:
-        diagnostic_boot, extra_ops = diag.install(emit, installs, master, ram, whole_guard=partition_fir, grace=guard_grace)
+        diagnostic_boot, extra_ops = diag.install(emit, installs, master, ram, whole_guard=partition_fir, grace=guard_grace, profiler=stall_profiler, settle=preset_settle, hooks=hooks)
     if chain_fir:
         cab_target = symbols["capture_fir8"] | 1
         if long_ir:
@@ -475,7 +477,9 @@ def build(diagnostics=False, cache_state=False, split_bank=False, display_fix=Fa
     ops.extend(partition_ops)
     assert master[0x3090e:0x30912].hex() == 'd6f7f5fe'
     ops.append(f'[[op]]\nkind="bl"\nslot="master"\noffset=0x3090e\nexpect="d6f7f5fe"\ntarget={boot}')
-    dest = (Path(__file__).parent.parent / 'fx-guard-grace' if guard_grace else
+    dest = (Path(__file__).parent.parent / 'fx-settle' if preset_settle else
+            Path(__file__).parent.parent / 'fx-stall-diag' if stall_profiler else
+            Path(__file__).parent.parent / 'fx-guard-grace' if guard_grace else
             Path(__file__).parent.parent / 'fx-long-ir' if long_ir else
             Path(__file__).parent.parent / 'fx-partition-fir' if partition_fir else
             Path(__file__).parent.parent / 'fx-chain-fir' if chain_fir else
@@ -501,4 +505,5 @@ if __name__ == '__main__':
           solid_fill='--solid-fill' in sys.argv, capture_guard='--capture-guard' in sys.argv,
           fast_fir='--fast-fir' in sys.argv, chain_fir='--chain-fir' in sys.argv,
           partition_fir='--partition-fir' in sys.argv, long_ir='--long-ir' in sys.argv,
-          guard_grace='--guard-grace' in sys.argv)
+          guard_grace='--guard-grace' in sys.argv, stall_profiler='--stall-profiler' in sys.argv,
+          preset_settle='--preset-settle' in sys.argv)
